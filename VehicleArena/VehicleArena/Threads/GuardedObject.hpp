@@ -4,12 +4,12 @@
 namespace VA {
 
 template <class TObject, class TLock>
-class GuardedObject {
-    GuardedObject(const GuardedObject&) = delete;
-    GuardedObject& operator = (const GuardedObject&) = delete;
+class LockedGuardedObject {
+    LockedGuardedObject(const LockedGuardedObject&) = delete;
+    LockedGuardedObject& operator = (const LockedGuardedObject&) = delete;
 public:
     template <class TMutex>
-    GuardedObject(TObject& object, TMutex& mutex)
+    LockedGuardedObject(TObject& object, TMutex& mutex)
         : object_{object}
         , lock_{mutex}
     {}
@@ -22,16 +22,16 @@ private:
 };
 
 template <class TObject, class TLock>
-class GuardedObjectFactory {
-    GuardedObjectFactory(const GuardedObjectFactory&) = delete;
-    GuardedObjectFactory& operator = (const GuardedObjectFactory&) = delete;
+class GuardedObject {
+    GuardedObject(const GuardedObject&) = delete;
+    GuardedObject& operator = (const GuardedObject&) = delete;
 public:
     template <class... TArgs>
-    GuardedObjectFactory(TArgs&&... args)
+    GuardedObject(TArgs&&... args)
         : object_{ std::forward<TArgs>(args)... }
     {}
-    GuardedObject<TObject, TLock> lock() {
-        return GuardedObject<TObject, TLock>{object_, object_.mutex_};
+    LockedGuardedObject<TObject, TLock> lock() {
+        return LockedGuardedObject<TObject, TLock>{object_, object_.mutex_};
     }
 private:
     TObject object_;

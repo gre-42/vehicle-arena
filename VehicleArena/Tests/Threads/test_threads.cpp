@@ -9,11 +9,11 @@ using namespace VA;
 
 class ProtectedClass {
     template <class TObject, class TLock>
-    friend class VA::GuardedObjectFactory;
+    friend class VA::GuardedObject;
     ProtectedClass() = default;
 public:
     template <class... Args>
-    static GuardedObjectFactory<ProtectedClass, ExceptLockGuard<FastMutex>> create(Args&&... args) {
+    static GuardedObject<ProtectedClass, ExceptLockGuard<FastMutex>> create(Args&&... args) {
         return {std::forward<Args>(args)...};
     }
     void func() {
