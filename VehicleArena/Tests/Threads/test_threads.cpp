@@ -1,6 +1,6 @@
-#include <VehicleArena/Threads/ThrowingLockGuard.hpp>
 #include <VehicleArena/Threads/FastMutex.hpp>
 #include <VehicleArena/Threads/GuardedObject.hpp>
+#include <VehicleArena/Threads/ThrowingLockGuard.hpp>
 #include <iostream>
 
 using namespace VA;
