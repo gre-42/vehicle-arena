@@ -1,4 +1,4 @@
-#include <VehicleArena/Threads/ExceptLockGuard.hpp>
+#include <VehicleArena/Threads/ThrowingLockGuard.hpp>
 #include <VehicleArena/Threads/FastMutex.hpp>
 #include <VehicleArena/Threads/GuardedObject.hpp>
 #include <iostream>
@@ -11,7 +11,7 @@ class ProtectedClass {
     ProtectedClass() = default;
 public:
     template <class... Args>
-    static GuardedObject<ProtectedClass, ExceptLockGuard<FastMutex>> create(Args&&... args) {
+    static GuardedObject<ProtectedClass, ThrowingLockGuard<FastMutex>> create(Args&&... args) {
         return {std::forward<Args>(args)...};
     }
     void func() {

@@ -4,16 +4,16 @@
 namespace VA {
 
 template <class TMutex>
-class ExceptLockGuard {
+class ThrowingLockGuard {
 public:
-    explicit ExceptLockGuard(TMutex& mutex)
+    explicit ThrowingLockGuard(TMutex& mutex)
         : mutex_{mutex}
     {
         if (!mutex_.must_lock()) {
             throw std::runtime_error("Could not lock mutex");
         }
     }
-    ~ExceptLockGuard() {
+    ~ThrowingLockGuard() {
         mutex_.unlock();
     }
 private:
