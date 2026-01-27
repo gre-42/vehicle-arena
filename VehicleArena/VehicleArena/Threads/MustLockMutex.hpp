@@ -5,7 +5,7 @@ namespace VA {
 
 class MustLockMutex: public std::timed_mutex {
 public:
-    bool must_lock() {
+    inline bool must_lock() {
         return try_lock_for(std::chrono::milliseconds(500));
     }
 };
