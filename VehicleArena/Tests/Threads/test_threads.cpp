@@ -2,8 +2,6 @@
 #include <VehicleArena/Threads/FastMutex.hpp>
 #include <VehicleArena/Threads/GuardedObject.hpp>
 #include <iostream>
-#include <memory>
-#include <mutex>
 
 using namespace VA;
 
