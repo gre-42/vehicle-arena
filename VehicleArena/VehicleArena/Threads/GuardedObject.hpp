@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 
 namespace VA {
 
@@ -22,12 +21,12 @@ private:
 };
 
 template <class TObject, class TLock>
-class GuardedObject {
-    GuardedObject(const GuardedObject&) = delete;
-    GuardedObject& operator = (const GuardedObject&) = delete;
+class GeneralGuardedObject {
+    GeneralGuardedObject(const GeneralGuardedObject&) = delete;
+    GeneralGuardedObject& operator = (const GeneralGuardedObject&) = delete;
 public:
     template <class... TArgs>
-    GuardedObject(TArgs&&... args)
+    GeneralGuardedObject(TArgs&&... args)
         : object_{ std::forward<TArgs>(args)... }
     {}
     LockedGuardedObject<TObject, TLock> lock() {
@@ -35,6 +34,23 @@ public:
     }
 private:
     TObject object_;
+};
+
+template <class TObject, class TMutex, class TLock>
+class SimpleGuardedObject {
+    SimpleGuardedObject(const SimpleGuardedObject&) = delete;
+    SimpleGuardedObject& operator = (const SimpleGuardedObject&) = delete;
+public:
+    template <class... TArgs>
+    SimpleGuardedObject(TArgs&&... args)
+        : object_{ std::forward<TArgs>(args)... }
+    {}
+    LockedGuardedObject<TObject, TLock> lock() {
+        return LockedGuardedObject<TObject, TLock>{object_, mutex_};
+    }
+private:
+    TObject object_;
+    TMutex mutex_;
 };
 
 }
