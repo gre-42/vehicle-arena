@@ -1,8 +1,8 @@
+#include <VehicleArena/Os/Os.hpp>
 #include <VehicleArena/Threads/FastMutex.hpp>
 #include <VehicleArena/Threads/GuardedObject.hpp>
 #include <VehicleArena/Threads/ThrowingGuardedObject.hpp>
 #include <VehicleArena/Threads/ThrowingLockGuard.hpp>
-#include <iostream>
 
 using namespace VA;
 
@@ -16,7 +16,7 @@ public:
         return {std::forward<Args>(args)...};
     }
     void func() {
-        std::cerr << "func()" << std::endl;
+        linfo() << "func()";
     }
 private:
     FastMutex mutex_;
@@ -25,7 +25,7 @@ private:
 class SimpleProtectedClass {
 public:
     void func() {
-        std::cerr << "func()" << std::endl;
+        linfo() << "func()";
     }
 };
 
@@ -46,7 +46,7 @@ int main() {
         test_general_protected_class();
         test_simple_protected_class();
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        lerr() << "Error: " << e.what();
         return 1;
     }
     return 0;
