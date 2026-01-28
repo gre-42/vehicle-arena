@@ -1,3 +1,5 @@
+## !!! WARNING !!!
+
 Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
 
 echo jk | sha256sum:
