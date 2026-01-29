@@ -9,7 +9,8 @@ def patch_file(filename):
     # print('Processing %s' % filename)
     with open(filename, 'r', encoding='utf-8') as f:
         s = f.read()
-        top = []
+        top0 = []
+        top1 = []
         inc = []
         rest = []
         rest_reached = False
@@ -24,18 +25,21 @@ def patch_file(filename):
                 rest_reached = True
             elif 'impl.hpp' in l:
                 rest_reached = True
-            elif l.startswith('/'):
-                rest_reached = True
             elif l == '#include <VehicleArena/Packed_Begin.hpp>':
                 rest_reached = True
             if rest_reached:
                 rest.append(l)
-            elif l in [
+            elif (len(inc) == 0) and (l in [
                 '#pragma once',
                 '#include <glad/gl.h>',
                 '#define GLFW_INCLUDE_NONE',
-                '#include <GLFW/glfw3.h>']:
-                top.append(l)
+                '#include <GLFW/glfw3.h>']):
+                top1.append(l)
+            elif (len(inc) == 0) and (len(top1) == 0) and (l in [
+                '']):
+                top0.append(l)
+            elif (len(inc) == 0) and (len(top1) == 0) and l.startswith('/'):
+                top0.append(l)
             elif l.startswith('#include'):
                 inc.append(l)
             else:
@@ -43,7 +47,7 @@ def patch_file(filename):
 
         inc_project = [l for l in inc if is_project_header(l)]
         inc_third_party = [l for l in inc if not is_project_header(l)]
-        new = '\n'.join(top + sorted(inc_project) + sorted(inc_third_party) + rest)
+        new = '\n'.join(top0 + top1 + sorted(inc_project) + sorted(inc_third_party) + rest)
     if new != s:
         print('%s needs to be fixed' % filename)
         #print('--------------')

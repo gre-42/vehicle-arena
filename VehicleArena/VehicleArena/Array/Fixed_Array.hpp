@@ -12,11 +12,11 @@
 #include <VehicleArena/Initialization/Default_Nan.hpp>
 #include <VehicleArena/Initialization/Default_Uninitialized.hpp>
 #include <VehicleArena/Initialization/Default_Uninitialized_Element.hpp>
+#include <VehicleArena/Initialization/Nan_Initialized.hpp>
+#include <VehicleArena/Initialization/Uninitialized.hpp>
 #include <VehicleArena/Io/Write_Number.hpp>
 #include <VehicleArena/Iterator/Pointer_Iterable.hpp>
 #include <VehicleArena/Math/Conju.hpp>
-#include <VehicleArena/Initialization/Nan_Initialized.hpp>
-#include <VehicleArena/Initialization/Uninitialized.hpp>
 #include <array>
 #include <cassert>
 #include <concepts>

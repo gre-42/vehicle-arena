@@ -5,14 +5,13 @@
 // echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
-#pragma once
-
 /// @file     jacobi.hpp
 /// @brief    Calculate the eigenvalues and eigevectors of a symmetric matrix
 ///           using the Jacobi eigenvalue algorithm.
 /// @author   Andrew Jewett
 /// @license  CC0-1.0
 
+#pragma once
 #include <algorithm>
 #include <cmath>
 //#include <cassert>
