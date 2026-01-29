@@ -26,7 +26,7 @@ def patch_file(filename):
                 rest_reached = True
             elif l.startswith('/'):
                 rest_reached = True
-            elif l == '#include <Mlib/Packed_Begin.hpp>':
+            elif l == '#include <VehicleArena/Packed_Begin.hpp>':
                 rest_reached = True
             if rest_reached:
                 rest.append(l)

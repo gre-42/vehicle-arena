@@ -1,26 +1,20 @@
-.PHONY: all test_debug test_release distclean recastnavigation
+.PHONY: all recastnavigation cmake build
 
 CMAKE_BUILD_TYPE ?= Release
 
-all: recastnavigation build
+all: recastnavigation cmake build
+
+cmake:
+	cmake -G Ninja -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" -B "${BUILD_PREFIX-}U${CMAKE_BUILD_TYPE}"
 
 build:
-	./build.sh ${CMAKE_BUILD_TYPE}
-
-test:
-	./build.sh ${CMAKE_BUILD_TYPE} test
+	cmake --build "${BUILD_PREFIX-}U${CMAKE_BUILD_TYPE}" --verbose
 
 debug:
 	make build CMAKE_BUILD_TYPE=Debug
 
 release:
 	make build CMAKE_BUILD_TYPE=Release
-
-test_debug: debug
-	make test CMAKE_BUILD_TYPE=Debug
-
-test_release: release
-	make test CMAKE_BUILD_TYPE=Release
 
 release_dbg:
 	make build CMAKE_BUILD_TYPE=RelWithDebInfo
@@ -54,11 +48,6 @@ build_tsan_clang:
 	CC=clang CXX=clang++ \
 	CFLAGS=-fsanitize=thread CXXFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread BUILD_PREFIX=LT${BUILD_PREFIX} \
 		make build CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-
-distclean:
-	./build.sh Debug distclean
-	./build.sh Release distclean
-	./build.sh RelWithDebInfo distclean
 
 clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'
