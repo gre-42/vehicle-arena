@@ -6,9 +6,9 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <cassert>
 #include <cstddef>
+#include <stdexcept>
 
 namespace VA {
 
@@ -63,7 +63,7 @@ public:
     }
     inline const T& at(size_t index) const {
         if (index >= size_) {
-            THROW_OR_ABORT("Index out of bounds");
+            throw std::runtime_error("Index out of bounds");
         }
         return (*this)[index];
     }

@@ -25,7 +25,7 @@ def patch_file(filename):
                 rest_reached = True
             elif 'impl.hpp' in l:
                 rest_reached = True
-            elif l == '#include <VehicleArena/Packed_Begin.hpp>':
+            elif l == '#include <VehicleArena/Misc/Packed_Begin.hpp>':
                 rest_reached = True
             if rest_reached:
                 rest.append(l)

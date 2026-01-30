@@ -6,15 +6,15 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #include "Triangle_3D.hpp"
-#include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Convex_Polygon.hpp>
-#include <Mlib/Geometry/Intersection/Welzl.hpp>
-#include <Mlib/Geometry/Plane_Nd.hpp>
-#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <VehicleArena/Geometry/Colored_Vertex.hpp>
+#include <VehicleArena/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <VehicleArena/Geometry/Intersection/Convex_Polygon.hpp>
+#include <VehicleArena/Geometry/Intersection/Welzl.hpp>
+#include <VehicleArena/Geometry/Plane_Nd.hpp>
+#include <VehicleArena/Math/Transformation/Transformation_Matrix.hpp>
+#include <VehicleArena/Scene_Config/Scene_Precision.hpp>
 
-using namespace Mlib;
+using namespace VA;
 
 template <class TPos>
 Triangle3D<TPos>::Triangle3D(const FixedArray<TPos, 3, 3>& vertices)
@@ -61,7 +61,7 @@ AxisAlignedBoundingBox<TPos, 3> Triangle3D<TPos>::aabb() const {
     return AxisAlignedBoundingBox<TPos, 3>::from_points(vertices_);
 }
 
-namespace Mlib {
+namespace VA {
 
 template class Triangle3D<float>;
 template class Triangle3D<CompressedScenePos>;

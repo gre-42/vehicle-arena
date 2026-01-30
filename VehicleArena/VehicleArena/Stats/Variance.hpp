@@ -6,9 +6,9 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Math.hpp>
+#include <VehicleArena/Math/Math.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 TData var(const Array<TData>& a) {
@@ -17,7 +17,7 @@ TData var(const Array<TData>& a) {
 
 template <class TData>
 TData nanvar(const Array<TData>& a) {
-    return var(a[!Mlib::isnan(a)]);
+    return var(a[!VA::isnan(a)]);
 }
 
 template <class TData>
@@ -27,7 +27,7 @@ TData stddev(const Array<TData>& a) {
 
 template <class TData>
 TData nanstddev(const Array<TData>& a) {
-    return stddev(a[!Mlib::isnan(a)]);
+    return stddev(a[!VA::isnan(a)]);
 }
 
 template <class TData>

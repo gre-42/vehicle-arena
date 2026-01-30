@@ -8,7 +8,7 @@
 #pragma once
 #include <cstddef>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 struct RansacOptions {

@@ -8,7 +8,7 @@
 #pragma once
 #include "Event_Emitter.hpp"
 #include <VehicleArena/Os/Os.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace VA {
 
@@ -63,7 +63,7 @@ void EventEmitter<Args...>::insert(
         on_insert_(f);
     }
     if (!functions_.try_emplace(&deletion_token, std::move(f)).second) {
-        THROW_OR_ABORT("Deletion token already exists");
+        throw std::runtime_error("Deletion token already exists");
     }
 }
 

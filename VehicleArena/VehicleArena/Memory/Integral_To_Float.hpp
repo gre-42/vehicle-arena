@@ -6,9 +6,9 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <concepts>
+#include <stdexcept>
 #include <string>
 
 namespace VA {
@@ -17,7 +17,7 @@ template <std::floating_point TDest, std::integral TSource>
 constexpr TDest integral_to_float(TSource source) {
     auto result = (TDest)source;
     if ((TSource)result != source) {
-        THROW_OR_ABORT("integral_to_float: Could not cast integral to floating-point number: " + std::to_string(source));
+        throw std::runtime_error("integral_to_float: Could not cast integral to floating-point number: " + std::to_string(source));
     }
     return result;
 }

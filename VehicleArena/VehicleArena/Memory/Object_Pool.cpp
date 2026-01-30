@@ -8,10 +8,10 @@
 #include "Object_Pool.hpp"
 #include <VehicleArena/Memory/Recursive_Deletion.hpp>
 #include <VehicleArena/Os/Os.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <exception>
+#include <stdexcept>
 
-using namespace Mlib;
+using namespace VA;
 
 ObjectPool VA::global_object_pool{ InObjectPoolDestructor::ASSERT_NO_LEAKS };
 
@@ -42,7 +42,7 @@ void ObjectPool::add(std::function<void()> deallocate, Object& o, SourceLocation
         verbose_abort("ObjectPool::add called during clearing");
     }
     if (!ptrs_.emplace(std::move(deallocate), &o, loc).second) {
-        THROW_OR_ABORT("Unique pointer already exists");
+        throw std::runtime_error("Unique pointer already exists");
     }
 }
 

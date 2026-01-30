@@ -6,9 +6,9 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <fstream>
 #include <list>
+#include <stdexcept>
 #include <string>
 
 namespace VA {
@@ -17,13 +17,13 @@ std::list<std::string> read_lines_from_file(const std::string& filename) {
     std::list<std::string> result;
     std::ifstream ifs(filename);
     if (ifs.fail()) {
-        THROW_OR_ABORT("Could not open " + filename);
+        throw std::runtime_error("Could not open " + filename);
     }
     while (ifs.peek() != EOF) {
         std::string line;
         std::getline(ifs, line);
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not read from " + filename);
+            throw std::runtime_error("Could not read from " + filename);
         }
         result.push_back(line);
     }

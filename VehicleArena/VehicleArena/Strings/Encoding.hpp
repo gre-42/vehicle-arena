@@ -6,13 +6,20 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Threads/FastMutex.hpp>
-#include <VehicleArena/Threads/GuardedObject.hpp>
-#include <VehicleArena/Threads/ThrowingLockGuard.hpp>
+#include <VehicleArena/Iterator/Generator.hpp>
+#include <string>
 
 namespace VA {
 
-template <class T>
-using ThrowingGuardedObject = SimpleGuardedObject<T, FastMutex, ThrowingLockGuard<FastMutex>>;
+Generator<char32_t> u8_to_u32_generator(const std::string& utf8);
+Generator<char> u32_to_u8_generator(const std::u32string& utf32);
+
+size_t nchars32(const std::string& utf8);
+
+std::u32string u8_to_u32_string(const std::string& utf8);
+std::string u32_to_u8_string(const std::u32string& wstr);
+
+std::u32string ascii_to_u32_string(const std::string& ascii);
+std::string u32_to_ascii_string(const std::u32string& wstr);
 
 }

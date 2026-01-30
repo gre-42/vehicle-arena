@@ -6,8 +6,8 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -28,7 +28,7 @@ public:
     }
     decltype(auto) get(size_t i) {
         if (i >= data_.size()) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 name_ + ": index (" + std::to_string(i) +
                 ") is out of bounds (" + std::to_string(data_.size()) + ')');
         }

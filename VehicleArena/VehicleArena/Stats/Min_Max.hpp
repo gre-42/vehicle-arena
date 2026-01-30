@@ -6,10 +6,10 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Math.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <VehicleArena/Math/Math.hpp>
+#include <stdexcept>
 
-namespace Mlib {
+namespace VA {
 
 template <class TDerived, class TData>
 auto maximum(const BaseDenseArray<TDerived, TData>& a, const BaseDenseArray<TDerived, TData>& b) {
@@ -69,7 +69,7 @@ template <class TDerived, class TData>
 TData max(const BaseDenseArray<TDerived, TData>& a) {
     auto f = a->flat_iterable();
     if (f.begin() == f.end()) {
-        THROW_OR_ABORT("Cannot determine maximum of array of length 0");
+        throw std::runtime_error("Cannot determine maximum of array of length 0");
     }
     TData result = *f.begin();
     for (auto it = f.begin() + 1; it != f.end(); ++it) {
@@ -82,7 +82,7 @@ template <class TDerived, class TData>
 TData min(const BaseDenseArray<TDerived, TData>& a) {
     auto f = a->flat_iterable();
     if (f.begin() == f.end()) {
-        THROW_OR_ABORT("Cannot determine minimum of array of length 0");
+        throw std::runtime_error("Cannot determine minimum of array of length 0");
     }
     TData result = *f.begin();
     for (auto it = f.begin() + 1; it != f.end(); ++it) {
@@ -93,12 +93,12 @@ TData min(const BaseDenseArray<TDerived, TData>& a) {
 
 template <class TData>
 TData nanmax(const Array<TData>& a) {
-    return max(a[!Mlib::isnan(a)]);
+    return max(a[!VA::isnan(a)]);
 }
 
 template <class TData>
 TData nanmin(const Array<TData>& a) {
-    return min(a[!Mlib::isnan(a)]);
+    return min(a[!VA::isnan(a)]);
 }
 
 }

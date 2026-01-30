@@ -7,7 +7,7 @@
 
 #pragma once
 
-namespace Mlib {
+namespace VA {
 
 template<class T>
 struct HigherPrecision;

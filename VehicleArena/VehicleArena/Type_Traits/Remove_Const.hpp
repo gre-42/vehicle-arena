@@ -8,7 +8,7 @@
 #pragma once
 #include <type_traits>
 
-namespace Mlib {
+namespace VA {
 
 template <class T>
 inline T& remove_const(const T& v) {

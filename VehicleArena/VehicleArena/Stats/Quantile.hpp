@@ -6,11 +6,11 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Math.hpp>
-#include <Mlib/Stats/Sort.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <VehicleArena/Math/Math.hpp>
+#include <VehicleArena/Stats/Sort.hpp>
+#include <stdexcept>
 
-namespace Mlib {
+namespace VA {
 
 template <class TDataX>
 class Quantiles {
@@ -19,7 +19,7 @@ public:
     : sx_(sorted(x))
     {
         if (x.length() == 0) {
-            THROW_OR_ABORT("Cannot compute quantiles for an empty array");
+            throw std::runtime_error("Cannot compute quantiles for an empty array");
         }
     }
     template <class TDataQ>
@@ -49,12 +49,12 @@ TDataX quantile(const Array<TDataX>& x, const TDataQ& q) {
 
 template <class TDataX, class TDataQ>
 Array<TDataX> nanquantiles(const Array<TDataX>& x, const Array<TDataQ>& q) {
-    return quantiles(x[!Mlib::isnan(x)], q);
+    return quantiles(x[!VA::isnan(x)], q);
 }
 
 template <class TDataX, class TDataQ>
 TDataX nanquantile(const Array<TDataX>& x, const TDataQ& q) {
-    return quantile(x[!Mlib::isnan(x)], q);
+    return quantile(x[!VA::isnan(x)], q);
 }
 
 }

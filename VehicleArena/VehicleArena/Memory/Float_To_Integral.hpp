@@ -6,9 +6,9 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <cmath>
 #include <concepts>
+#include <stdexcept>
 #include <string>
 
 namespace VA {
@@ -16,11 +16,11 @@ namespace VA {
 template <std::integral TDest, std::floating_point TSource>
 TDest float_to_integral(TSource source) {
     if (!std::isfinite(source)) {
-        THROW_OR_ABORT("float_to_integral: Floating-point number is not finite");
+        throw std::runtime_error("float_to_integral: Floating-point number is not finite");
     }
     auto result = (TDest)source;
     if ((TSource)result != source) {
-        THROW_OR_ABORT("float_to_integral: Could not cast floating-point number to integral: " + std::to_string(source));
+        throw std::runtime_error("float_to_integral: Could not cast floating-point number to integral: " + std::to_string(source));
     }
     return result;
 }

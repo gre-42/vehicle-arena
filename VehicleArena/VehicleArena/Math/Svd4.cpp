@@ -22,12 +22,12 @@
 #include "Svd4.hpp"
 #include <VehicleArena/Math/Sort_Svd.hpp>
 #include <VehicleArena/Stats/Min_Max.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 #include <malloc.h> /* for array allocation */
 #include <math.h>    /* for 'fabs'           */
 
-using namespace Mlib;
+using namespace VA;
 
 static int svd_hac(int m,int n,int withu,int withv,double eps,double tol,
     const Array<double>& a, Array<double>& q, Array<double>& u, Array<double>& v)
@@ -268,7 +268,7 @@ void VA::svd4(const Array<double>& a, Array<double>& u, Array<double>& s, Array<
 
     int retval = svd_hac((int)a.shape(0), (int)a.shape(1), true, true, 1e-12, 1e-12, a, s, u, v);
     if (retval != 0) {
-        THROW_OR_ABORT("svd_hac returned with code " + std::to_string(retval));
+        throw std::runtime_error("svd_hac returned with code " + std::to_string(retval));
     }
     vT = v.T();
     sort_svd(u, s, vT);
@@ -283,7 +283,7 @@ double VA::cond4(const Array<double>& a) {
     int retval =
         svd_hac((int)a.shape(1), (int)a.shape(1), false, false, 1e-12, 1e-12, m, s, u, v);
     if (retval != 0) {
-        THROW_OR_ABORT("svd_hac returned with code " + std::to_string(retval));
+        throw std::runtime_error("svd_hac returned with code " + std::to_string(retval));
     }
     return max(s) / min(s);
 }
@@ -296,7 +296,7 @@ double VA::cond4_x(const Array<double>& a) {
     int retval =
         svd_hac((int)a.shape(0), (int)a.shape(1), false, false, 1e-12, 1e-12, a, s, u, v);
     if (retval != 0) {
-        THROW_OR_ABORT("svd_hac returned with code " + std::to_string(retval));
+        throw std::runtime_error("svd_hac returned with code " + std::to_string(retval));
     }
     return squared(max(s) / min(s));
 }

@@ -6,12 +6,12 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #include "Folder_IStream_Dictionary.hpp"
-#include <Mlib/Memory/Integral_Cast.hpp>
-#include <Mlib/Os/Os.hpp>
-#include <Mlib/Variable_And_Hash.hpp>
+#include <VehicleArena/Hashing/Variable_And_Hash.hpp>
+#include <VehicleArena/Memory/Integral_Cast.hpp>
+#include <VehicleArena/Os/Os.hpp>
 #include <list>
 
-using namespace Mlib;
+using namespace VA;
 
 FolderIStreamDictionary::FolderIStreamDictionary(std::string folder)
     : folder_{ std::move(folder) }

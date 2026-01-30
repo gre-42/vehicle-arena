@@ -8,11 +8,11 @@
 #pragma once
 #include <VehicleArena/Array/Fixed_Array.hpp>
 #include <VehicleArena/Array/Fixed_Array_Hash.hpp>
-#include <VehicleArena/Default_Uninitialized.hpp>
-#include <VehicleArena/Default_Uninitialized_Element.hpp>
-#include <VehicleArena/Hash.hpp>
+#include <VehicleArena/Hashing/Hash.hpp>
+#include <VehicleArena/Hashing/Std_Hash.hpp>
+#include <VehicleArena/Initialization/Default_Uninitialized.hpp>
+#include <VehicleArena/Initialization/Default_Uninitialized_Element.hpp>
 #include <VehicleArena/Math/Math.hpp>
-#include <VehicleArena/Std_Hash.hpp>
 #include <compare>
 #include <concepts>
 

@@ -6,8 +6,8 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <cstddef>
+#include <stdexcept>
 #include <stdexcept>
 #include <string>
 
@@ -30,7 +30,7 @@ TFloat newton_1d(
         x += dx;
     }
     if (werror) {
-        THROW_OR_ABORT("Newton did not converge after " + std::to_string(niterations) + " steps");
+        throw std::runtime_error("Newton did not converge after " + std::to_string(niterations) + " steps");
     } else {
         return NAN;
     }

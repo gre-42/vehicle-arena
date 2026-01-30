@@ -9,7 +9,7 @@
 #include <VehicleArena/Math/Eigen_Jacobi.hpp>
 #include <VehicleArena/Math/Svd4.hpp>
 
-using namespace Mlib;
+using namespace VA;
 
 Array<double> VA::find_smallest_eigenvector_4(const Array<double>& m) {
     Array<double> u;

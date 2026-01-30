@@ -6,10 +6,10 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Stats/Cdf.hpp>
-#include <Mlib/Stats/Quantile.hpp>
+#include <VehicleArena/Stats/Cdf.hpp>
+#include <VehicleArena/Stats/Quantile.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData, class TDataRef, class TFloat=TData>
 class HistogramMatching {

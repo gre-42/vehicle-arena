@@ -1,8 +1,8 @@
 #include <VehicleArena/Os/Os.hpp>
-#include <VehicleArena/Threads/FastMutex.hpp>
-#include <VehicleArena/Threads/GuardedObject.hpp>
-#include <VehicleArena/Threads/ThrowingGuardedObject.hpp>
-#include <VehicleArena/Threads/ThrowingLockGuard.hpp>
+#include <VehicleArena/Threads/Fast_Mutex.hpp>
+#include <VehicleArena/Threads/Guarded_Object.hpp>
+#include <VehicleArena/Threads/Throwing_Guarded_Object.hpp>
+#include <VehicleArena/Threads/Throwing_Lock_Guard.hpp>
 
 using namespace VA;
 

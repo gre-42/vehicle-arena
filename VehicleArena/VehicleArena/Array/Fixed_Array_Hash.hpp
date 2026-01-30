@@ -7,7 +7,7 @@
 
 #pragma once
 #include <VehicleArena/Array/Fixed_Array.hpp>
-#include <VehicleArena/Hash.hpp>
+#include <VehicleArena/Hashing/Hash.hpp>
 
 namespace VA {
 

@@ -7,8 +7,8 @@
 
 #pragma once
 #include <VehicleArena/Array/Array.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <iostream>
+#include <stdexcept>
 
 namespace VA {
 
@@ -84,7 +84,7 @@ TX generic_optimization(
     if ((i < niterations) || nothrow) {
         return x_best;
     } else {
-        THROW_OR_ABORT("levenberg_marquardt did not converge");
+        throw std::runtime_error("levenberg_marquardt did not converge");
     }
 }
 

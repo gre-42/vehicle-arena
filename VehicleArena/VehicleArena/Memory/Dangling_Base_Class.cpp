@@ -8,7 +8,7 @@
 #include "Dangling_Base_Class.hpp"
 #include <mutex>
 
-using namespace Mlib;
+using namespace VA;
 
 DanglingBaseClass::DanglingBaseClass() = default;
 

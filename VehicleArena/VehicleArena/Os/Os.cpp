@@ -99,7 +99,7 @@ static std::string get_path_in_files_dir(
         case FileStorageType::CACHE:
             return ndk_helper::StorageType::CACHE;
         }
-        THROW_OR_ABORT("Unknown storage type");
+        throw std::runtime_error("Unknown storage type");
     }();
     std::string res = AUi::GetFilesDir(st);
     for (const auto& s : child_path) {
@@ -157,7 +157,7 @@ LLog VA::lerr(LogFlags flags) {
 
 LLog VA::lraw(LogFlags flags) {
     if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
-        THROW_OR_ABORT("Raw logger cannot suppress duplicates");
+        throw std::runtime_error("Raw logger cannot suppress duplicates");
     }
     return LLog{
         flags,
@@ -168,7 +168,7 @@ LLog VA::lraw(LogFlags flags) {
 
 LLog VA::lout(LogFlags flags) {
     if (any(flags & LogFlags::SUPPRESS_DUPLICATES)) {
-        THROW_OR_ABORT("Out logger cannot suppress duplicates");
+        throw std::runtime_error("Out logger cannot suppress duplicates");
     }
     return LLog{
         flags,
@@ -207,7 +207,7 @@ void VA::remove_path(
  {
     std::error_code ec;
     if (!fs::remove(get_path_in_files_dir({path}, storage_type), ec)) {
-        THROW_OR_ABORT("Could not delete path \"" + path.string() + "\". " + ec.message());
+        throw std::runtime_error("Could not delete path \"" + path.string() + "\". " + ec.message());
     }
 }
 
@@ -222,7 +222,7 @@ void VA::rename_path(
         get_path_in_files_dir({to}, storage_type),
         ec);
     if (ec) {
-        THROW_OR_ABORT("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
+        throw std::runtime_error("Could not rename path \"" + from.string() + "\" to " + to.string() + ". " + ec.message());
     }
 }
 
@@ -233,7 +233,7 @@ void VA::create_directories(
     std::error_code ec;
     fs::create_directories(get_path_in_files_dir({dirname}, storage_type), ec);
     if (ec) {
-        THROW_OR_ABORT("Could not create directories \"" + dirname.string() + "\". " + ec.message());
+        throw std::runtime_error("Could not create directories \"" + dirname.string() + "\". " + ec.message());
     }
 }
 

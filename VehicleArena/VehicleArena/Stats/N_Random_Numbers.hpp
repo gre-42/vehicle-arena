@@ -6,9 +6,9 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Interp.hpp>
+#include <VehicleArena/Math/Interp.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 TData n_random_numbers_correction_factor(const TData& n) {
@@ -44,12 +44,12 @@ void n_random_numbers(const TData& n, TUniformRandomNumberGenerator& rng, const 
 
 }
 
-// #include <Mlib/Math/Math.hpp>
-// #include <Mlib/Math/Optimize/Newton_1D.hpp>
-// #include <Mlib/Stats/Random_Number_Generators.hpp>
+// #include <VehicleArena/Math/Math.hpp>
+// #include <VehicleArena/Math/Optimize/Newton_1D.hpp>
+// #include <VehicleArena/Stats/Random_Number_Generators.hpp>
 // #include <iostream>
 // 
-// using namespace Mlib;
+// using namespace VA;
 // 
 // static const size_t N = 1000000;
 // 

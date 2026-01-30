@@ -6,8 +6,8 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <algorithm>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -23,7 +23,7 @@ auto least_common_multiple(
     std::vector<std::remove_reference_t<decltype(*begin)>> data0(begin, end);
     std::vector<std::remove_reference_t<decltype(*begin)>> dataI(begin, end);
     if (data0.empty()) {
-        THROW_OR_ABORT("least_common_multiple received empty sequence");
+        throw std::runtime_error("least_common_multiple received empty sequence");
     }
     for (size_t iteration = 0; iteration < max_iterations; ++iteration) {
         if (std::all_of(
@@ -36,7 +36,7 @@ auto least_common_multiple(
         auto i = (size_t)(std::min_element(dataI.begin(), dataI.end()) - dataI.begin());
         dataI[i] += data0[i];
     }
-    THROW_OR_ABORT("least_common_multiple did not terminate");
+    throw std::runtime_error("least_common_multiple did not terminate");
 }
 
 }

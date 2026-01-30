@@ -6,10 +6,10 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Stats/Random_Number_Generators.hpp>
+#include <VehicleArena/Stats/Random_Number_Generators.hpp>
 #include <complex>
 
-namespace Mlib {
+namespace VA {
 
 /*
  * Uniformly random array

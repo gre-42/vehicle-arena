@@ -6,10 +6,10 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Stats/T_Distribution.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <VehicleArena/Stats/T_Distribution.hpp>
+#include <stdexcept>
 
-namespace Mlib {
+namespace VA {
 
 /**
  * Iterator yielding mean and variance.
@@ -29,7 +29,7 @@ public:
     }
     TData var() const {
         if (n_ < 2) {
-            THROW_OR_ABORT("n < 2, can not compute variance");
+            throw std::runtime_error("n < 2, can not compute variance");
         }
         return M2_ / TData(n_ - 1);
     }

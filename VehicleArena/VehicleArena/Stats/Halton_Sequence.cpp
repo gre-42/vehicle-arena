@@ -6,15 +6,15 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #include "Halton_Sequence.hpp"
-#include <Mlib/Os/Os.hpp>
+#include <VehicleArena/Os/Os.hpp>
 #include <algorithm>
 #include <iostream>
 #include <random>
 #include <vector>
 
-using namespace Mlib;
+using namespace VA;
 
-void Mlib::generate_halton_lut(size_t nnumbers, size_t block_size) {
+void VA::generate_halton_lut(size_t nnumbers, size_t block_size) {
     std::vector<double> random_numbers(nnumbers);
     HaltonSequence<double> rng{ RationalHaltonSequence{ DEFAULT_RATIONAL_HALTON_SEED, HALTON_LUT_B } };
     for (auto& n : random_numbers) {
@@ -39,7 +39,7 @@ void Mlib::generate_halton_lut(size_t nnumbers, size_t block_size) {
     }
 }
 
-void Mlib::generate_rational_halton_lut(unsigned int b, unsigned int seed, size_t nnumbers, size_t block_size) {
+void VA::generate_rational_halton_lut(unsigned int b, unsigned int seed, size_t nnumbers, size_t block_size) {
     PermutedRationalHaltonSequence<double> s{ RationalHaltonSequence{ DEFAULT_RATIONAL_HALTON_SEED, b }, seed, block_size };
     for (size_t i = 0; i < nnumbers; ++i) {
         auto r = s();
@@ -52,7 +52,7 @@ void Mlib::generate_rational_halton_lut(unsigned int b, unsigned int seed, size_
     }
 }
 
-MLIB_STATS_API double Mlib::SHUFFLED_HALTON_1K[1'000] = {
+MLIB_STATS_API double VA::SHUFFLED_HALTON_1K[1'000] = {
     0.625, 0.5625, 0.875, 0.0625, 0.75, 0.125, 0.25, 0.3125, 0.375, 0.5,
     0.78125, 0.9375, 0.53125, 0.03125, 0.1875, 0.6875, 0.4375, 0.8125, 0.15625, 0.28125,
     0.21875, 0.65625, 0.84375, 0.40625, 0.59375, 0.71875, 0.09375, 0.90625, 0.34375, 0.46875,
@@ -155,7 +155,7 @@ MLIB_STATS_API double Mlib::SHUFFLED_HALTON_1K[1'000] = {
     0.0302734, 0.405273, 0.530273, 0.655273, 0.905273, 0.280273, 0.155273, 0.983398, 0.780273, 0.0927734
 };
 
-MLIB_STATS_API RationalNumber<unsigned int> Mlib::SHUFFLED_RATIONAL_HALTON_1K[1'000] = {
+MLIB_STATS_API RationalNumber<unsigned int> VA::SHUFFLED_RATIONAL_HALTON_1K[1'000] = {
     {1, 9}, {7, 9}, {19, 27}, {2, 9}, {13, 27}, {4, 27}, {4, 9}, {5, 9}, {2, 27}, {16, 27},
     {2, 3}, {1, 27}, {8, 9}, {7, 27}, {23, 27}, {25, 27}, {26, 27}, {1, 81}, {17, 27}, {55, 81},
     {1, 3}, {37, 81}, {28, 81}, {5, 27}, {22, 27}, {11, 27}, {20, 27}, {46, 81}, {64, 81}, {8, 27},

@@ -9,7 +9,7 @@
 #include <VehicleArena/Array/Sparse_Array.hpp>
 #include <VehicleArena/Math/Math.hpp>
 
-using namespace Mlib;
+using namespace VA;
 
 SchurComplement::SchurComplement(
     const Array<float>& H,

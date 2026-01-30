@@ -6,15 +6,15 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Geometry/Exceptions/Triangle_Exception.hpp>
-#include <Mlib/Geometry/Fixed_Cross.hpp>
-#include <Mlib/Geometry/Normal_Vector_Error_Behavior.hpp>
-#include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Os/Os.hpp>
-#include <Mlib/Stats/Min_Max.hpp>
+#include <VehicleArena/Geometry/Exceptions/Triangle_Exception.hpp>
+#include <VehicleArena/Geometry/Fixed_Cross.hpp>
+#include <VehicleArena/Geometry/Normal_Vector_Error_Behavior.hpp>
+#include <VehicleArena/Math/Fixed_Math.hpp>
+#include <VehicleArena/Os/Os.hpp>
+#include <VehicleArena/Stats/Min_Max.hpp>
 #include <optional>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 FixedArray<TData, 3> scaled_triangle_normal(const FixedArray<TData, 3, 3>& t)

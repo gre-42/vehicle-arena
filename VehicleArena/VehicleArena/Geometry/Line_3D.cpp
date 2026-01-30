@@ -6,15 +6,15 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #include "Line_3D.hpp"
-#include <Mlib/Geometry/Colored_Vertex.hpp>
-#include <Mlib/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <Mlib/Geometry/Intersection/Bounding_Sphere.hpp>
-#include <Mlib/Geometry/Plane_Nd.hpp>
-#include <Mlib/Geometry/Ray_Segment_3D.hpp>
-#include <Mlib/Math/Transformation/Transformation_Matrix.hpp>
-#include <Mlib/Scene_Config/Scene_Precision.hpp>
+#include <VehicleArena/Geometry/Colored_Vertex.hpp>
+#include <VehicleArena/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <VehicleArena/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <VehicleArena/Geometry/Plane_Nd.hpp>
+#include <VehicleArena/Geometry/Ray_Segment_3D.hpp>
+#include <VehicleArena/Math/Transformation/Transformation_Matrix.hpp>
+#include <VehicleArena/Scene_Config/Scene_Precision.hpp>
 
-using namespace Mlib;
+using namespace VA;
 
 template <class TPos>
 template <class TPos2>
@@ -57,7 +57,7 @@ AxisAlignedBoundingBox<TPos, 3> Line3D<TPos>::aabb() const {
     return AxisAlignedBoundingBox<TPos, 3>::from_points(vertices_);
 }
 
-namespace Mlib {
+namespace VA {
 
 template class Line3D<float>;
 template class Line3D<ScenePos>;

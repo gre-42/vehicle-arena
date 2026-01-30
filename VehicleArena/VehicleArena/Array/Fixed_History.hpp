@@ -8,8 +8,8 @@
 #pragma once
 #include <VehicleArena/Math/Fixed_Math.hpp>
 #include <VehicleArena/Os/Os.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <algorithm>
+#include <stdexcept>
 
 namespace VA {
 
@@ -47,7 +47,7 @@ private:
 template <class TData, size_t length>
 TData max(const FixedHistory<TData, length>& b) {
     if (b.empty()) {
-        THROW_OR_ABORT("Cannot compute maximum of empty history");
+        throw std::runtime_error("Cannot compute maximum of empty history");
     }
     TData result = b.data(0);
     for (size_t i = 1; i < b.length(); ++i) {

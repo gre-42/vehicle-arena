@@ -8,9 +8,9 @@
 #pragma once
 #include "Array.hpp"
 #include "Array_Shape.hpp"
-#include <VehicleArena/Throw_Or_Abort.hpp>
 #include <map>
 #include <memory>
+#include <stdexcept>
 
 namespace VA {
 
@@ -47,7 +47,7 @@ public:
     void resize(const ArrayShape& shape) {
         assert(shape.ndim() == 2);
         if (shape(0) < (*shape_)(0)) {
-            THROW_OR_ABORT("Cannot reduce the number of rows in SparseArrayCcs");
+            throw std::runtime_error("Cannot reduce the number of rows in SparseArrayCcs");
         }
         data_->resize(shape(1));
         *shape_ = shape;
@@ -191,7 +191,7 @@ private:
 
 template <class TData>
 Array<TData> operator , (const SparseArrayCcs<TData>& a, const SparseArrayCcs<TData>& b) {
-    THROW_OR_ABORT("Sparse: please use outer or dot");
+    throw std::runtime_error("Sparse: please use outer or dot");
 }
 
 template <class TData>
@@ -231,7 +231,7 @@ Array<TData> dot2d(const SparseArrayCcs<TData>& a, const SparseArrayCcs<TData>& 
 
 template <class TData>
 Array<TData> operator , (const SparseArrayCcs<TData>& a, const Array<TData>& b) {
-    THROW_OR_ABORT("Sparse: please use outer or dot");
+    throw std::runtime_error("Sparse: please use outer or dot");
 }
 
 template <class TData>

@@ -9,7 +9,7 @@
 #include <VehicleArena/Geometry/Fixed_Cross.hpp>
 #include <VehicleArena/Math/Fixed_Math.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 inline FixedArray<TData, 2> scaled_line_normal(const FixedArray<TData, 2, 2>& l)

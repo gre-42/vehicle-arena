@@ -1,3 +1,13 @@
 include(../CMakeCommands.cmake)
 
+add_subdirectory(Array)
+add_subdirectory(Images)
+add_subdirectory(Io)
+add_subdirectory(Json)
+add_subdirectory(Math)
+add_subdirectory(Misc)
 add_subdirectory(Os)
+add_subdirectory(Regex)
+add_subdirectory(Strings)
+add_subdirectory(Threads)
+add_subdirectory(Time)

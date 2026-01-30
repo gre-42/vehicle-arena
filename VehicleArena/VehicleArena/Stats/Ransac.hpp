@@ -6,16 +6,16 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Math.hpp>
-#include <Mlib/Stats/Mean.hpp>
-#include <Mlib/Stats/RansacOptions.hpp>
-#include <Mlib/Stats/Sort.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <VehicleArena/Math/Math.hpp>
+#include <VehicleArena/Stats/Mean.hpp>
+#include <VehicleArena/Stats/RansacOptions.hpp>
+#include <VehicleArena/Stats/Sort.hpp>
 #include <algorithm>
 #include <limits>
 #include <random>
+#include <stdexcept>
 
-namespace Mlib {
+namespace VA {
 
 /**
  * Random sampling consensus (RANSAC) algorithm
@@ -47,7 +47,7 @@ Array<size_t> ransac(
         sort(perm);
         Array<TData> positive_residual = substitute_nans(callable(perm), TData(INFINITY));
         if (positive_residual.length() != nelems_large) {
-            THROW_OR_ABORT(
+            throw std::runtime_error(
                 "Residual length (" +
                 std::to_string(positive_residual.length())  +
                 ")  does not match nelems_large (" +

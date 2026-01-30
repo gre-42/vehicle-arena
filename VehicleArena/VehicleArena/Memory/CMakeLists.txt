@@ -1,9 +1,9 @@
 include(../../CMakeCommands.cmake)
 
-set(mlib_excluded_files "")
+set(vehicle_arena_excluded_files "")
 
-my_add_library(MlibMemory "1" "" "${mlib_excluded_files}")
+my_add_library(VehicleArenaMemory "1" "" "${vehicle_arena_excluded_files}")
 
-include_directories(${Mlib_INCLUDE_DIR})
+include_directories(${VehicleArena_INCLUDE_DIR})
 
-target_link_libraries(MlibMemory MlibOs Mlib)
+target_link_libraries(VehicleArenaMemory VehicleArenaOs VehicleArenaMisc)

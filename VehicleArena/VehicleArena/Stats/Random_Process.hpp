@@ -7,7 +7,7 @@
 
 #pragma once
 
-namespace Mlib {
+namespace VA {
 
 template <class TRng, class TSmoother>
 class RandomProcess {

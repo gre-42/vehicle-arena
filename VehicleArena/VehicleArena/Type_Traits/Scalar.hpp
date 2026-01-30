@@ -9,7 +9,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace Mlib {
+namespace VA {
 
 template <class T>
 concept Scalar = std::is_arithmetic_v<T>;

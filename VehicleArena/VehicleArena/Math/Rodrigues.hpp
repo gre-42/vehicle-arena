@@ -9,7 +9,7 @@
 #include <VehicleArena/Array/Array.hpp>
 #include <VehicleArena/Geometry/Cross.hpp>
 
-namespace Mlib{
+namespace VA{
 
 template <class TData>
 Array<TData> rodrigues2(const Array<TData>& k, const TData& theta);

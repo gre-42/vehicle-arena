@@ -6,10 +6,10 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Math.hpp>
-#include <Mlib/Stats/Sort.hpp>
+#include <VehicleArena/Math/Math.hpp>
+#include <VehicleArena/Stats/Sort.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 TData median(const Array<TData>& a) {
@@ -33,7 +33,7 @@ TData median_inplace(Array<TData>& a) {
 
 template <class TData>
 TData nanmedian(const Array<TData>& a) {
-    return median(a[!Mlib::isnan(a)]);
+    return median(a[!VA::isnan(a)]);
 }
 
 /**
@@ -43,8 +43,8 @@ TData nanmedian(const Array<TData>& a) {
  */
 template <class TData>
 TData mad(const Array<TData>& a, TData* median = nullptr, TData c = TData(0.674)) {
-    TData me = ::Mlib::median(a);
-    TData ma = ::Mlib::median(abs(a - me)) / c;
+    TData me = ::VA::median(a);
+    TData ma = ::VA::median(abs(a - me)) / c;
     if (median != nullptr) {
         *median = me;
     }
@@ -54,7 +54,7 @@ TData mad(const Array<TData>& a, TData* median = nullptr, TData c = TData(0.674)
 template <class TData>
 Array<TData> robust_deviation(const Array<TData>& sample) {
     TData median;
-    TData mad = ::Mlib::mad(sample, &median);
+    TData mad = ::VA::mad(sample, &median);
     return (sample - median) / mad;
 }
 

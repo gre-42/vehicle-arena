@@ -6,10 +6,10 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Rational_Number.hpp>
-#include <Mlib/Stats/Fast_Random_Number_Generators.hpp>
-#include <Mlib/Stats/Sequence_Filters.hpp>
-#include <Mlib/Throw_Or_Abort.hpp>
+#include <VehicleArena/Math/Rational_Number.hpp>
+#include <VehicleArena/Stats/Fast_Random_Number_Generators.hpp>
+#include <VehicleArena/Stats/Sequence_Filters.hpp>
+#include <stdexcept>
 
 #ifdef _MSC_VER
 #ifdef MlibStats_EXPORTS
@@ -21,7 +21,7 @@
 #define MLIB_STATS_API
 #endif
 
-namespace Mlib {
+namespace VA {
 
 void generate_halton_lut(size_t nnumbers, size_t block_size);
 void generate_rational_halton_lut(unsigned int b, unsigned int seed, size_t nnumbers, size_t block_size);

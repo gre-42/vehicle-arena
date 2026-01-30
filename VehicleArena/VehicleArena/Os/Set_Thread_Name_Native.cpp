@@ -16,7 +16,7 @@
 // void VA::set_thread_name_native(const std::string& name) {
 //     int rc = pthread_setname_np(pthread_self(), name.c_str());
 //     if (rc != 0) {
-//         THROW_OR_ABORT(std::string("Could not set thread name: ") + strerror(rc));
+//         throw std::runtime_error(std::string("Could not set thread name: ") + strerror(rc));
 //     }
 // }
 

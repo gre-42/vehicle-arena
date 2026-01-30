@@ -6,10 +6,10 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Array/Fixed_Array.hpp>
-#include <Mlib/Stats/Random_Arrays.hpp>
+#include <VehicleArena/Array/Fixed_Array.hpp>
+#include <VehicleArena/Stats/Random_Arrays.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData, size_t... tsize>
 FixedArray<TData, tsize...> fixed_random_uniform_array(unsigned int seed) {

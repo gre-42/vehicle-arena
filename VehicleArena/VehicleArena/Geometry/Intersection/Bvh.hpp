@@ -54,7 +54,7 @@ public:
         , level_{level}
     {
         if (level > 32) {
-            THROW_OR_ABORT("Too many BVH levels");
+            throw std::runtime_error("Too many BVH levels");
         }
     }
 
@@ -411,7 +411,7 @@ public:
         svg.finish();
         ofs.flush();
         if (ofs.fail()) {
-            THROW_OR_ABORT("Could not write to file \"" + filename + '"');
+            throw std::runtime_error("Could not write to file \"" + filename + '"');
         }
     }
 

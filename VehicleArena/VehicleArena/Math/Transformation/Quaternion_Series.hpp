@@ -11,7 +11,7 @@
 #include <VehicleArena/Math/Time_Point_Series.hpp>
 #include <VehicleArena/Math/Transformation/Quaternion.hpp>
 #include <VehicleArena/Os/Os.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace VA {
 

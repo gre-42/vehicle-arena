@@ -9,7 +9,7 @@
 #include <iosfwd>
 #include <queue>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData, class TScore>
 struct DataAndScore {

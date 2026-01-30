@@ -8,7 +8,7 @@
 #pragma once
 #include <string>
 
-namespace Mlib {
+namespace VA {
 
 enum class TriangleTangentErrorBehavior {
     ZERO,

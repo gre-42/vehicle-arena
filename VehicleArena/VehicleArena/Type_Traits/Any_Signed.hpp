@@ -8,7 +8,7 @@
 #pragma once
 #include <type_traits>
 
-namespace Mlib {
+namespace VA {
 
 // From: https://en.cppreference.com/w/cpp/types/is_signed
 namespace detail

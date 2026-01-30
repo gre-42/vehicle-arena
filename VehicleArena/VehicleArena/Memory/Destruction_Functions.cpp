@@ -10,7 +10,7 @@
 #include <VehicleArena/Os/Os.hpp>
 #include <mutex>
 
-using namespace Mlib;
+using namespace VA;
 
 DestructionFunctions::DestructionFunctions()
     : clearing_{ false }

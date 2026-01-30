@@ -8,7 +8,7 @@
 #pragma once
 #include <VehicleArena/Array/Fixed_Array.hpp>
 #include <VehicleArena/Math/Math.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace VA {
 
@@ -24,7 +24,7 @@ void assert_allclose(const FixedArray<TData>& a, const FixedArray<TData>& b, typ
     if (!isclose(a(), b(), atol)) {
         std::stringstream sstr;
         sstr << "Numbers not close (atol=" << atol << "):" << a() << ", " << b();
-        THROW_OR_ABORT(sstr.str());
+        throw std::runtime_error(sstr.str());
     }
 }
 
@@ -38,7 +38,7 @@ void assert_allequal(const FixedArray<TData, tshape0, tshape...>& a, const Fixed
 template <class TData>
 void assert_allequal(const FixedArray<TData>& a, const FixedArray<TData>& b) {
     if (!(a() == b()) && !(scalar_isnan(a()) && scalar_isnan(b()))) {
-        THROW_OR_ABORT("Numbers not identical: " + std::to_string(a()) + ", " + std::to_string(b()));
+        throw std::runtime_error("Numbers not identical: " + std::to_string(a()) + ", " + std::to_string(b()));
     }
 }
 

@@ -8,9 +8,9 @@
 #pragma once
 #include <VehicleArena/Geometry/Fixed_Cross.hpp>
 #include <VehicleArena/Math/Fixed_Math.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
-namespace Mlib{
+namespace VA{
 
 template <class TData>
 FixedArray<TData, 3, 3> rodrigues1(
@@ -37,7 +37,7 @@ FixedArray<TData, 3, 3> rodrigues2(
 {
     if (check_angle) {
         if (std::abs(theta) > TData(2.1 * M_PI)) {
-            THROW_OR_ABORT("rodrigues2: angle too large: " + std::to_string(theta));
+            throw std::runtime_error("rodrigues2: angle too large: " + std::to_string(theta));
         }
     }
     FixedArray<TData, 3, 3> K{cross(k)};

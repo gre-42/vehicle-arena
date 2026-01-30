@@ -6,9 +6,9 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #include "Binary.hpp"
-#include <Mlib/Os/Os.hpp>
+#include <VehicleArena/Os/Os.hpp>
 
-using namespace Mlib;
+using namespace VA;
 
 void VA::print_char(char c) {
     char v = (c >= ' ') && (c <= '~') ? c : '.';
@@ -26,7 +26,7 @@ void VA::print_chars(std::span<char> span, const char* msg) {
 
 std::string VA::read_string(std::istream& istr, size_t length, const char* msg, IoVerbosity verbosity) {
     if (length > 1'000) {
-        THROW_OR_ABORT("String too large: " + std::string(msg));
+        throw std::runtime_error("String too large: " + std::string(msg));
     }
     std::string s(length, '?');
     read_vector(istr, s, msg, verbosity);
@@ -35,20 +35,20 @@ std::string VA::read_string(std::istream& istr, size_t length, const char* msg, 
 
 void VA::seek_relative_positive(std::istream& istr, std::streamoff amount, IoVerbosity verbosity) {
     if (amount < 0) {
-        THROW_OR_ABORT("Seek in negative direction");
+        throw std::runtime_error("Seek in negative direction");
     }
     if (any(verbosity & IoVerbosity::DATA)) {
         for (std::streamoff i = 0; i < amount; ++i) {
             auto c = istr.get();
             if (c == EOF) {
-                THROW_OR_ABORT("Could not read char");
+                throw std::runtime_error("Could not read char");
             }
             print_char((char)c);
         }
     } else {
         istr.seekg(amount, std::ios::cur);
         if (istr.fail()) {
-            THROW_OR_ABORT("Seekg failed");
+            throw std::runtime_error("Seekg failed");
         }
     }
 }

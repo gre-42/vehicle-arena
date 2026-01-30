@@ -7,7 +7,7 @@
 
 #pragma once
 #include <VehicleArena/Math/Math.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace VA {
 
@@ -30,7 +30,7 @@ Array<Array<TData>> vH_x(const Array<Array<TData>>& a) {
 template <class TDerived, class TData>
 Array<TData> sum(const BaseDenseArray<TDerived, Array<TData>>& a) {
     if (a->nelements() == 0) {
-        THROW_OR_ABORT("Sum received empty array");
+        throw std::runtime_error("Sum received empty array");
     }
     Array<TData> result = zeros<TData>(a->flat_iterable().begin()->shape());
     for (const Array<TData>& v : a->flat_iterable()) {

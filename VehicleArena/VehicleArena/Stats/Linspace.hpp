@@ -6,9 +6,9 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Math.hpp>
+#include <VehicleArena/Math/Math.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 std::pair<TData, TData> linspace_multipliers(size_t i, size_t count) {
@@ -28,7 +28,7 @@ public:
     {}
     TData operator [] (size_t i) const {
         if (count_ == 0) {
-            THROW_OR_ABORT("Linspace called, but count == 0");
+            throw std::runtime_error("Linspace called, but count == 0");
         }
         if (count_ == 1) {
             return (from_ + to_) / TData(2);

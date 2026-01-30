@@ -16,17 +16,17 @@
 #include <VehicleArena/Array/Fixed_Array.hpp>
 #include <VehicleArena/Math/Conju.hpp>
 #include <VehicleArena/Memory/Integral_Cast.hpp>
-#include <VehicleArena/Initializer_List_As_Sized_Iterable.hpp>
+#include <VehicleArena/Initialization/Initializer_List_As_Sized_Iterable.hpp>
 #include <VehicleArena/Io/Read_Number.hpp>
 #include <VehicleArena/Io/Write_Number.hpp>
 #include <VehicleArena/Io/Binary.hpp>
 #include <VehicleArena/Io/Read_Number.hpp>
 #include <VehicleArena/Io/Write_Number.hpp>
-#include <VehicleArena/Uninitialized.hpp>
+#include <VehicleArena/Initialization/Uninitialized.hpp>
 #include <VehicleArena/Iterator/Sized_Iterable.hpp>
 #include <VehicleArena/Os/Os.hpp>
 #include <VehicleArena/Strings/To_Number.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 #include <cassert>
 #include <climits>
 #include <complex>
@@ -252,7 +252,7 @@ public:
         // Input is a list => empty_shape must be at least 1D
         if ((rhs.size() == 0) && (empty_shape.ndim() == 0)) {
             // Not an assertion because it is used for file-io
-            THROW_OR_ABORT("Cannot construct an empty array from a list without empty_shape parameter");
+            throw std::runtime_error("Cannot construct an empty array from a list without empty_shape parameter");
         }
         if (rhs.size() == 0) {
             do_resize(empty_shape);
@@ -262,7 +262,7 @@ public:
             for (size_t i = 0; i < rhs.size(); ++i) {
                 if (any(it->shape() != rhs.begin()->shape())) {
                     // Not an assertion because it is used for file-io
-                    THROW_OR_ABORT("Arrays in lists have differing sizes");
+                    throw std::runtime_error("Arrays in lists have differing sizes");
                 }
                 (*this)[i] = *(it++);
             }
@@ -381,7 +381,7 @@ public:
         : Array(InitializerListAsSizedIterable(d))
     {
         if (d.size() == 1) {
-            THROW_OR_ABORT("Do not use single initializer for arrays");
+            throw std::runtime_error("Do not use single initializer for arrays");
         }
     }
     explicit Array(const ArrayShape& shape)
@@ -642,7 +642,7 @@ public:
     template <size_t tndim>
     const FixedArray<size_t, tndim> fixed_shape() const {
         if (ndim() != tndim) {
-            THROW_OR_ABORT("fixed_shape of incorrect size requested");
+            throw std::runtime_error("fixed_shape of incorrect size requested");
         }
         return FixedArray<size_t, tndim>::from_buffer(shape().begin(), ndim());
     }
@@ -738,7 +738,7 @@ public:
         } else if (ndim() == 2) {
             Array result{ArrayShape{shape(1), shape(0)}};
             if (block_size == 0) {
-                THROW_OR_ABORT("Block size must be >= 1");
+                throw std::runtime_error("Block size must be >= 1");
             }
             if (block_size == 1) {
                 for (size_t r = 0; r < shape(0); ++r) {
@@ -970,7 +970,7 @@ public:
         assert(ndim() == 2);
         std::ofstream ofs(filename);
         if (ofs.fail()) {
-            THROW_OR_ABORT("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open file \"" + filename + '"');
         }
         ofs.setf(std::ios_base::scientific);
         ofs.precision(10);
@@ -982,7 +982,7 @@ public:
         }
         ofs.flush();
         if (ofs.fail()) {
-            THROW_OR_ABORT("Could not save to file \"" + filename + '"');
+            throw std::runtime_error("Could not save to file \"" + filename + '"');
         }
     }
 
@@ -994,7 +994,7 @@ public:
         auto ifs_p = create_ifstream(filename);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open file \"" + filename + '"');
         }
         std::string line;
         while(std::getline(ifs, line)) {
@@ -1008,7 +1008,7 @@ public:
             }
             #pragma GCC diagnostic pop
             if (srow.fail() && !srow.eof()) {
-                THROW_OR_ABORT("Could not read line of file \"" + filename + '"');
+                throw std::runtime_error("Could not read line of file \"" + filename + '"');
             }
             Array arow(ArrayShape{rowv.size()});
             for (size_t c = 0; c < arow.length(); ++c) {
@@ -1017,7 +1017,7 @@ public:
             result.push_back(arow);
         }
         if (ifs.fail() && !ifs.eof()) {
-            THROW_OR_ABORT("Could not read line of file \"" + filename + '"');
+            throw std::runtime_error("Could not read line of file \"" + filename + '"');
         }
         return Array(result, empty_shape);
     }
@@ -1025,7 +1025,7 @@ public:
     void save_binary(const std::string& filename) const {
         std::ofstream ofs(filename, std::ios::binary);
         if (ofs.fail()) {
-            THROW_OR_ABORT("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open file \"" + filename + '"');
         }
         ofs << "BinaryArray\n" << ndim();
         for (size_t i = 0; i < ndim(); ++i) {
@@ -1035,7 +1035,7 @@ public:
         ofs.write((const char*)flat_iterable().begin(), integral_cast<std::streamsize>(nbytes()));
         ofs.flush();
         if (ofs.fail()) {
-            THROW_OR_ABORT("Could not save to file \"" + filename + '"');
+            throw std::runtime_error("Could not save to file \"" + filename + '"');
         }
     }
 
@@ -1043,44 +1043,44 @@ public:
         auto ifs_p = create_ifstream(filename, std::ios::binary);
         auto& ifs = *ifs_p;
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not open file \"" + filename + '"');
+            throw std::runtime_error("Could not open file \"" + filename + '"');
         }
         std::string first_line;
         ifs >> first_line;
         if (first_line != "BinaryArray") {
-            THROW_OR_ABORT("File \"" + filename + "\" has no first line \"BinaryArray\"");
+            throw std::runtime_error("File \"" + filename + "\" has no first line \"BinaryArray\"");
         }
         size_t ndim;
         ifs >> ndim;
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not read ndim from file \"" + filename + '"');
+            throw std::runtime_error("Could not read ndim from file \"" + filename + '"');
         }
         ArrayShape s(ndim);
         for (size_t i = 0; i < ndim; ++i) {
             ifs >> s(i);
         }
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not read shape from file \"" + filename + '"');
+            throw std::runtime_error("Could not read shape from file \"" + filename + '"');
         }
         size_t element_size;
         ifs >> element_size;
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not element size from file \"" + filename + '"');
+            throw std::runtime_error("Could not element size from file \"" + filename + '"');
         }
         if (element_size != sizeof(TData)) {
-            THROW_OR_ABORT("Wrong element size in file \"" + filename + '"');
+            throw std::runtime_error("Wrong element size in file \"" + filename + '"');
         }
         auto c = read_binary<char>(ifs, "newline character", IoVerbosity::SILENT);
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not read newline-character of file \"" + filename + '"');
+            throw std::runtime_error("Could not read newline-character of file \"" + filename + '"');
         }
         if (c != '\n') {
-            THROW_OR_ABORT("Did not find newline-character in file \"" + filename + '"');
+            throw std::runtime_error("Did not find newline-character in file \"" + filename + '"');
         }
         Array res{s};
         ifs.read((char*)res.flat_iterable().begin(), integral_cast<std::streamsize>(res.nbytes()));
         if (ifs.fail()) {
-            THROW_OR_ABORT("Could not read data from file \"" + filename + '"');
+            throw std::runtime_error("Could not read data from file \"" + filename + '"');
         }
         return res;
     }
@@ -1159,7 +1159,7 @@ public:
         Array af = flattened();
         Array<TResultData> rf = r.flattened();
         if (rf.length() > INT_MAX) {
-            THROW_OR_ABORT("Vector too long");
+            throw std::runtime_error("Vector too long");
         }
         int len = (int)rf.length();
         #pragma omp parallel for if (len > 25)
@@ -1214,7 +1214,7 @@ public:
         Array<TDataB> bf = b.flattened();
         Array<TDataResult> rf = r.flattened();
         if (rf.length() > INT_MAX) {
-            THROW_OR_ABORT("Vector too long");
+            throw std::runtime_error("Vector too long");
         }
         int len = (int)rf.length();
         #pragma omp parallel for if (len > 25)

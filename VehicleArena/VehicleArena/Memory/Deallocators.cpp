@@ -7,9 +7,9 @@
 
 #include "Deallocators.hpp"
 #include <VehicleArena/Memory/Deallocation_Token.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
-using namespace Mlib;
+using namespace VA;
 
 Deallocators::Deallocators() = default;
 

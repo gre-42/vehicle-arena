@@ -6,11 +6,11 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Stats/Clamp_Uniform.hpp>
+#include <VehicleArena/Stats/Clamp_Uniform.hpp>
 #include <cstddef>
 #include <vector>
 
-namespace Mlib {
+namespace VA {
 
 template <class TRationalSequence, class TFloat>
 class FloatSequence {
@@ -60,7 +60,7 @@ public:
         , buffer_(buffer_size)
     {
         if (buffer_size == 0) {
-            THROW_OR_ABORT("Buffer size is zero");
+            throw std::runtime_error("Buffer size is zero");
         }
         this->seed(seed);
     }

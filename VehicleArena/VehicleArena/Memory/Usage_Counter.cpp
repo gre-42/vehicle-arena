@@ -8,7 +8,7 @@
 #include "Usage_Counter.hpp"
 #include <mutex>
 
-using namespace Mlib;
+using namespace VA;
 
 CounterUser::CounterUser(const DanglingBaseClassRef<UsageCounter>& counter)
     : usage_counter_{ counter }

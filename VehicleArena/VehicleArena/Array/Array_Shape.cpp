@@ -8,7 +8,7 @@
 #include "Array_Shape.hpp"
 #include <sstream>
 
-using namespace Mlib;
+using namespace VA;
 
 ArrayShape::ArrayShape() = default;
 ArrayShape::ArrayShape(const ArrayShape& shape) = default;

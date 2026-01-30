@@ -6,19 +6,19 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #include "Triangle_Tangent_Error_Behavior.hpp"
-#include <Mlib/Throw_Or_Abort.hpp>
 #include <map>
+#include <stdexcept>
 
-using namespace Mlib;
+using namespace VA;
 
-TriangleTangentErrorBehavior Mlib::triangle_tangent_error_behavior_from_string(const std::string& str) {
+TriangleTangentErrorBehavior VA::triangle_tangent_error_behavior_from_string(const std::string& str) {
     static const std::map<std::string, TriangleTangentErrorBehavior> m{
         {"zero", TriangleTangentErrorBehavior::ZERO},
         {"warn", TriangleTangentErrorBehavior::WARN},
         {"throw", TriangleTangentErrorBehavior::THROW} };
     auto it = m.find(str);
     if (it == m.end()) {
-        THROW_OR_ABORT("Unknown triangle tangent error behavior: " + str);
+        throw std::runtime_error("Unknown triangle tangent error behavior: " + str);
     }
     return it->second;
 }

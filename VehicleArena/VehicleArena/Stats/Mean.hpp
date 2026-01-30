@@ -6,15 +6,15 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Array/Consteval_Workaround.hpp>
-#include <Mlib/Assert.hpp>
-#include <Mlib/Math/Fixed_Math.hpp>
-#include <Mlib/Math/Math.hpp>
-#include <Mlib/Memory/Integral_To_Float.hpp>
-#include <Mlib/Type_Traits/Get_Scalar.hpp>
-#include <Mlib/Type_Traits/Operand.hpp>
+#include <VehicleArena/Array/Consteval_Workaround.hpp>
+#include <VehicleArena/Math/Fixed_Math.hpp>
+#include <VehicleArena/Math/Math.hpp>
+#include <VehicleArena/Memory/Integral_To_Float.hpp>
+#include <VehicleArena/Testing/Assert.hpp>
+#include <VehicleArena/Type_Traits/Get_Scalar.hpp>
+#include <VehicleArena/Type_Traits/Operand.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 TData mean(const Array<TData>& a) {
@@ -48,7 +48,7 @@ Array<TData> mean(const Array<TData>& a, size_t axis) {
 
 template <class TDerived, class TData>
 TData nanmean(const BaseDenseArray<TDerived, TData>& a) {
-    return mean((*a)[!Mlib::isnan(a)]);
+    return mean((*a)[!VA::isnan(a)]);
 }
 
 }

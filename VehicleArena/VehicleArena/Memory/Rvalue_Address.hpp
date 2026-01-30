@@ -6,16 +6,16 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Threads/AtomicMutex.hpp>
-#include <VehicleArena/Threads/MustLockMutex.hpp>
-#include <mutex>
 
 namespace VA {
 
-#ifdef __SANITIZE_THREAD__
-using FastMutex = MustLockMutex;
-#else
-using FastMutex = AtomicMutex;
-#endif
+/**
+ * Get rid of warning "taking address of a temporary".
+ * Source: https://stackoverflow.com/a/9963084/2292832
+ */
+template<typename T>
+inline const T* rvalue_address(const T& in) {
+    return &in;
+}
 
 }

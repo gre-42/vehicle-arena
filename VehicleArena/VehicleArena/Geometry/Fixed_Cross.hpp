@@ -9,7 +9,7 @@
 #include <VehicleArena/Array/Fixed_Array.hpp>
 #include <VehicleArena/Type_Traits/Higher_Precision.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 FixedArray<TData, 3, 3> cross(const FixedArray<TData, 3>& k) {

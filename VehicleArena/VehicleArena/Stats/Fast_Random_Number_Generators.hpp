@@ -6,12 +6,12 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Float_Type.hpp>
-#include <Mlib/Memory/Integral_Cast.hpp>
+#include <VehicleArena/Math/Float_Type.hpp>
+#include <VehicleArena/Memory/Integral_Cast.hpp>
 #include <random>
 #include <tuple>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 class FastUniformRandomNumberGenerator {

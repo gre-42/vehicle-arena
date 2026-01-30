@@ -48,7 +48,7 @@ public:
             auto edge_normal = cross(plane.normal, dir.template casted<TDir>());
             auto l2 = sum(squared(edge_normal));
             if (l2 < 1e-12) {
-                THROW_OR_ABORT("Cannot compute edge normal");
+                throw std::runtime_error("Cannot compute edge normal");
             }
             edges(i) = PlaneNd<TDir, TPos, 3>{ edge_normal / std::sqrt(l2), corners[i] };
         }

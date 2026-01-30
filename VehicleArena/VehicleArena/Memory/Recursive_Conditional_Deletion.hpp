@@ -6,7 +6,7 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
 namespace VA {
 
@@ -17,7 +17,7 @@ void remove_from_map_recursively_if(TContainer& elements, const TPredicate& pred
         if (predicate(*it)) {
             auto node = elements.extract(it++);
             if (!map2.insert(std::move(node)).inserted) {
-                THROW_OR_ABORT("Map element added during deletion, and deleted right again");
+                throw std::runtime_error("Map element added during deletion, and deleted right again");
             }
         } else {
             ++it;

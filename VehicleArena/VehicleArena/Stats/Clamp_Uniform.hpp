@@ -7,7 +7,7 @@
 
 #pragma once
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 TData clamp_uniform(const TData& value, const TData& low, const TData& high) {

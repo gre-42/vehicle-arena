@@ -6,19 +6,19 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Math/Math.hpp>
-#include <Mlib/Stats/Linspace.hpp>
-#include <Mlib/Stats/Mean.hpp>
-#include <Mlib/Stats/Min_Max.hpp>
+#include <VehicleArena/Math/Math.hpp>
+#include <VehicleArena/Stats/Linspace.hpp>
+#include <VehicleArena/Stats/Mean.hpp>
+#include <VehicleArena/Stats/Min_Max.hpp>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 class Histogram {
 public:
     Histogram(const Array<TData>& data, size_t nbins = 10) {
         assert(nbins > 1);
-        Array<TData> fdata = data[Mlib::isfinite(data)];
+        Array<TData> fdata = data[VA::isfinite(data)];
         mi_ = min(fdata);
         ma_ = max(fdata);
         // TData h = (ma - mi) / (nbins - 1);

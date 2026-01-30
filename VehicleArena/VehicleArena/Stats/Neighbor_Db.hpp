@@ -6,13 +6,13 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <Mlib/Array/Array_Forward.hpp>
-#include <Mlib/Stats/Sort.hpp>
-#include <Mlib/Stats/Variance.hpp>
+#include <VehicleArena/Array/Array_Forward.hpp>
+#include <VehicleArena/Stats/Sort.hpp>
+#include <VehicleArena/Stats/Variance.hpp>
 #include <list>
 #include <set>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 class NeighborDb1d {

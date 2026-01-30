@@ -7,9 +7,9 @@
 
 #include "Deallocation_Token.hpp"
 #include <VehicleArena/Memory/Deallocators.hpp>
-#include <VehicleArena/Throw_Or_Abort.hpp>
+#include <stdexcept>
 
-using namespace Mlib;
+using namespace VA;
 
 DeallocationToken DeallocationToken::empty() noexcept {
     return DeallocationToken{nullptr, std::list<std::function<void()>>::iterator()};
@@ -24,7 +24,7 @@ DeallocationToken::DeallocationToken(DeallocationToken&& other) noexcept
 
 DeallocationToken& DeallocationToken::operator = (DeallocationToken&& other) {
     if (deallocators_ != nullptr) {
-        THROW_OR_ABORT("Deallocators already set");
+        throw std::runtime_error("Deallocators already set");
     }
     deallocators_ = other.deallocators_;
     it_ = std::move(other.it_);
