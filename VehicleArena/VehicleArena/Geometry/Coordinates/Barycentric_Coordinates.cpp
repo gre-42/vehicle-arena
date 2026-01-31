@@ -49,7 +49,7 @@ void VA::barycentric(
     // TData denom = dot0d(v0, dot1d(M - M.T(), v1));
     if (std::abs(denom) < 1e-14) {
         auto sd = (std::stringstream() << denom).str();
-        THROW_OR_ABORT2(TriangleException(a, b, c, "barycentric coordinates encountered zero denominator: " + sd));
+        throw TriangleException(a, b, c, "barycentric coordinates encountered zero denominator: " + sd);
     }
     FixedArray<double, 2> pn = m.transform(p);
     FixedArray<double, 2> v2 = (pn - an);

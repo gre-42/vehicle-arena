@@ -5,22 +5,13 @@
 // echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
-#pragma once
-#include <VehicleArena/Geometry/Intersection/Bvh.hpp>
+#include "Perspective_Camera_Config.hpp"
+#include <VehicleArena/Math/Fixed_Math.hpp>
 
-namespace VA {
+using namespace VA;
 
-enum class SceneElementType {
-    NONE = 0,
-    STATIC = 1 << 0,
-    DYNAMIC = 1 << 1,
-    CONVEX = 1 << 2,
-    CONCAVE = 1 << 3,
-    VISIBLE = 1 << 4
-};
-
-class GeometryScene {
-
-};
-
+FixedArray<float, 2> PerspectiveCameraConfig::dpi(const FixedArray<float, 2>& texture_size) const {
+    return {
+        texture_size(0) / (2.f * std::atan(y_fov / 2.f)) / aspect_ratio,
+        texture_size(1) / (2.f * std::atan(y_fov / 2.f))};
 }

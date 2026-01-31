@@ -18,7 +18,7 @@ struct Point;
 
 }
 
-namespace Mlib {
+namespace VA {
 
 template <class TPos>
 class EdgeException: public std::runtime_error {

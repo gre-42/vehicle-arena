@@ -13,6 +13,7 @@
 #include <VehicleArena/Os/Os.hpp>
 #include <VehicleArena/Stats/Min_Max.hpp>
 #include <optional>
+#include <stdexcept>
 
 namespace VA {
 
@@ -56,7 +57,7 @@ FixedArray<TNormal, 3> get_alternative_or_throw(
         lwarn() << "Cannot calculate triangle normal";
     }
     if (any(error_behavior & NormalVectorErrorBehavior::THROW)) {
-        THROW_OR_ABORT2(TriangleException(t[0], t[1], t[2], "Cannot calculate triangle normal"));
+        throw TriangleException(t[0], t[1], t[2], "Cannot calculate triangle normal");
     }
     return fixed_zeros<TNormal, 3>();
 }

@@ -11,7 +11,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData>
 class TriangleException : public std::runtime_error {

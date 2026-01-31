@@ -7,7 +7,7 @@
 
 #include "Gl_Look_At_Aabb.hpp"
 #include <VehicleArena/Geometry/Coordinates/Gl_Look_At.hpp>
-#include <VehicleArena/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <VehicleArena/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 
 using namespace VA;
 

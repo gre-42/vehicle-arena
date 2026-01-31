@@ -6,7 +6,7 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Geometry/Intersection/Convex_Polygon.hpp>
+#include <VehicleArena/Geometry/Primitives/Convex_Polygon.hpp>
 #include <VehicleArena/Initialization/Uninitialized.hpp>
 #include <VehicleArena/Math/Fixed_Math.hpp>
 #include <VehicleArena/Stats/Clamped.hpp>
@@ -32,7 +32,7 @@ class AxisAlignedBoundingBox {
     template <class TData2, size_t tndim2>
     friend class AxisAlignedBoundingBox; 
 public:
-    using Bound = padded_fixed_array_t<TData, tndim>;
+    using Bound = FixedArray<TData, tndim>;
 
     AxisAlignedBoundingBox(Uninitialized)
         : min{ uninitialized }
@@ -432,13 +432,13 @@ inline const auto& aabb(const AxisAlignedBoundingBox<TPosition, tndim>& a)
 }
 
 template <class TData, size_t tndim>
-inline auto diagonal_vector(const FixedArray<TData, tndim>& p)
+inline auto diagonal_sizes(const FixedArray<TData, tndim>& p)
 {
     return fixed_zeros<TData, tndim>();
 }
 
 template <class TPosition, size_t tndim>
-inline auto diagonal_vector(const AxisAlignedBoundingBox<TPosition, tndim>& a)
+inline auto diagonal_sizes(const AxisAlignedBoundingBox<TPosition, tndim>& a)
 {
     return a.size();
 }

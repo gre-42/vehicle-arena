@@ -7,7 +7,7 @@
 
 #pragma once
 #include <VehicleArena/Argument_List.hpp>
-#include <VehicleArena/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
+#include <VehicleArena/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
 #include <VehicleArena/Json/Json_View.hpp>
 
 namespace VA {

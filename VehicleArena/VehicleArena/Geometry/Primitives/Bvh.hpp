@@ -6,7 +6,7 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
-#include <VehicleArena/Geometry/Intersection/Bvh_Fwd.hpp>
+#include <VehicleArena/Geometry/Primitives/Bvh_Fwd.hpp>
 #include <VehicleArena/Math/Fixed_Math.hpp>
 #include <VehicleArena/Math/Funpack.hpp>
 #include <VehicleArena/Math/Pow.hpp>
@@ -69,7 +69,7 @@ public:
         using F = funpack_t<TPosition>;
         auto iscale = (uint32_t)1 << (level_ - 1);
         auto max_size_children = max_size_ * integral_to_float<F>(iscale);
-        if (any(diagonal_vector(entry.primitive()) > max_size_children)) {
+        if (any(diagonal_sizes(entry.primitive()) > max_size_children)) {
             return data_.add(entry);
         }
         for (auto& c : children_) {
@@ -82,6 +82,16 @@ public:
             }
         }
         return children_.emplace_back(VA::aabb(entry.primitive()), GenericBvh{max_size_, level_ - 1}).second.insert(entry);
+    }
+
+    AxisAlignedBoundingBox<TPosition, tndim> move() {
+        auto result = AxisAlignedBoundingBox<TPosition, tndim>::empty();
+        for (auto& [aabb, c] : children_) {
+            aabb = c.move();
+            result.extend(aabb);
+        }
+        result.extend(data_aabb());
+        return result;
     }
 
     void clear() {

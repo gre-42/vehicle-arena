@@ -7,9 +7,9 @@
 
 #pragma once
 #include <VehicleArena/Hashing/Std_Hash.hpp>
-#include <VehicleArena/Object.hpp>
+#include <VehicleArena/Misc/Object.hpp>
+#include <VehicleArena/Misc/Source_Location.hpp>
 #include <VehicleArena/Os/Os.hpp>
-#include <VehicleArena/Source_Location.hpp>
 #include <VehicleArena/Threads/Safe_Atomic_Shared_Mutex.hpp>
 #include <atomic>
 #include <shared_mutex>

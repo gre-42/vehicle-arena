@@ -7,10 +7,10 @@
 
 #include "Triangle_3D.hpp"
 #include <VehicleArena/Geometry/Colored_Vertex.hpp>
-#include <VehicleArena/Geometry/Intersection/Axis_Aligned_Bounding_Box.hpp>
-#include <VehicleArena/Geometry/Intersection/Convex_Polygon.hpp>
-#include <VehicleArena/Geometry/Intersection/Welzl.hpp>
-#include <VehicleArena/Geometry/Plane_Nd.hpp>
+#include <VehicleArena/Geometry/Primitives/Axis_Aligned_Bounding_Box.hpp>
+#include <VehicleArena/Geometry/Primitives/Convex_Polygon.hpp>
+#include <VehicleArena/Geometry/Primitives/Plane_Nd.hpp>
+#include <VehicleArena/Geometry/Welzl.hpp>
 #include <VehicleArena/Math/Transformation/Transformation_Matrix.hpp>
 #include <VehicleArena/Scene_Config/Scene_Precision.hpp>
 

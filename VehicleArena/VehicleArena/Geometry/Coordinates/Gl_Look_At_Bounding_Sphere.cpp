@@ -8,7 +8,7 @@
 #include "Gl_Look_At_Bounding_Sphere.hpp"
 #include <VehicleArena/Geometry/Cameras/Distance_For_Fov.hpp>
 #include <VehicleArena/Geometry/Coordinates/Gl_Look_At.hpp>
-#include <VehicleArena/Geometry/Intersection/Bounding_Sphere.hpp>
+#include <VehicleArena/Geometry/Primitives/Bounding_Sphere.hpp>
 
 using namespace VA;
 

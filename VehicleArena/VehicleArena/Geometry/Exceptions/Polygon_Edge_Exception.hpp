@@ -11,7 +11,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace Mlib {
+namespace VA {
 
 template <class TData, size_t tndim>
 class PolygonEdgeException : public std::runtime_error {

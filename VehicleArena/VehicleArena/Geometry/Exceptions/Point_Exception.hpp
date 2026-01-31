@@ -11,7 +11,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace Mlib {
+namespace VA {
 
 template <class TPos, size_t tndim>
 class PointException: public std::runtime_error {
