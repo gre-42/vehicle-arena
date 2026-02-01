@@ -6,42 +6,62 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
+#include <VehicleArena/Geometry/Mesh/Typed_Mesh.hpp>
 #include <VehicleArena/Geometry/Primitives/Bvh.hpp>
+#include <VehicleArena/Geometry/Primitives/Bvh_Grid.hpp>
+#include <VehicleArena/Physics/Containers/Elements/Collision_Triangle_Sphere.hpp>
 #include <VehicleArena/Scene_Config/Scene_Precision.hpp>
-#include <list>
+#include <VehicleArena/Scene_Graph/Scene_Element_Type.hpp>
+#include <memory>
+#include <set>
 
 namespace VA {
 
 class Camera;
+class IRenderable;
 struct DeferredRenderable;
+struct RenderEngineConfig;
+struct PhysicsEngineConfig;
+class RigidBodyVehicle;
+class IIntersectableMesh;
 
-enum class SceneElementTypes {
-    NONE = 0,
-    STATIC = 1 << 0,
-    DYNAMIC = 1 << 1,
-    CONVEX = 1 << 2,
-    CONCAVE = 1 << 3,
-    VISIBLE = 1 << 4
+struct RigidBodyAndIntersectableMesh {
+    std::shared_ptr<RigidBodyVehicle> rb;
+    TypedMesh<std::shared_ptr<IIntersectableMesh>> mesh;
 };
 
 class SceneGraph {
 public:
-    SceneGraph();
+    explicit SceneGraph(
+        const RenderEngineConfig& rcfg,
+        const PhysicsEngineConfig& pcfg);
     ~SceneGraph();
     void render(const Camera& camera);
+    void move(SceneElementTypes types);
 private:
+    using RenderablesBvh = Bvh<
+        CompressedScenePos,
+        3,
+        std::shared_ptr<IRenderable>>;
+    using CollidablePolygonBvh = CompressedBvhGrid<
+        CompressedScenePos,
+        HalfCompressedScenePos,
+        RigidBodyAndCollisionTriangleSphere<CompressedScenePos>,
+        RigidBodyAndCollisionTriangleSphere<HalfCompressedScenePos>,
+        3>;
+    using CollidableMovablesBvh = BvhGrid<
+        CompressedScenePos,
+        3,
+        RigidBodyAndIntersectableMesh>;
     void render(
         const FixedArray<float, 4, 4>& vp,
         const FixedArray<ScenePos, 3>& offset,
-        std::list<DeferredRenderable>& deferred,
+        std::set<DeferredRenderable>& deferred,
         SceneElementTypes types);
-    // All renderable BHV-nodes contain non-recursive scene-node elements.
-    // BVH-data gets abstracted by an interface.
-    //   Objects, small instances (grass), large instances
-    // DynamicRenderables
-    // StaticRenderables
-    // DynamicConvexCollidables
-    // StaticConcaveCollidables
+    RenderablesBvh dynamic_renderables_;
+    RenderablesBvh static_renderables_;
+    CollidableMovablesBvh dynamic_object_collidables_;
+    CollidablePolygonBvh static_polygonal_collidables_;
 };
 
 }

@@ -1,0 +1,138 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#pragma once
+#include <VehicleArena/Geometry/Billboard_Id.hpp>
+#include <VehicleArena/Geometry/Material/Aggregate_Mode.hpp>
+#include <VehicleArena/Geometry/Material/Billboard_Atlas_Instance.hpp>
+#include <VehicleArena/Geometry/Material/Blend_Map_Texture.hpp>
+#include <VehicleArena/Geometry/Material/Blend_Mode.hpp>
+#include <VehicleArena/Geometry/Material/Blending_Pass_Type.hpp>
+#include <VehicleArena/Geometry/Material/Depth_Func.hpp>
+#include <VehicleArena/Geometry/Material/Interior_Textures.hpp>
+#include <VehicleArena/Geometry/Material/Particle_Type.hpp>
+#include <VehicleArena/Geometry/Material/Render_Pass.hpp>
+#include <VehicleArena/Geometry/Material/Shading.hpp>
+#include <VehicleArena/Geometry/Material/Texture_Descriptor.hpp>
+#include <VehicleArena/Geometry/Material/Transformation_Mode.hpp>
+#include <VehicleArena/Math/Orderable_Fixed_Array.hpp>
+#include <VehicleArena/Scene_Config/Scene_Precision.hpp>
+#include <compare>
+#include <cstddef>
+#include <string>
+#include <vector>
+
+namespace VA {
+
+struct Morphology;
+
+/** Material with included sorting support for later rendering.
+ *
+ * Notes about sorting:
+ *
+ * Comparing two materials can be a time-consuming process because it
+ * includes comparing texture names and more.
+ * Therefore, a faster comparison function "rendering_sorting_key" is provided.
+ * The slow, complete sorting is used in the "AggregateArrayRender", while the
+ * faster comparison is used in the ArrayInstancesRenderer.
+ * 
+ * The material's sorting key only sorts the vertex arrays, not instances.
+ * Instances are sorted using "VisibilityCheck::sorting_key".
+ * "Blended::sorting_key" only affects blended, non-instanced or aggregated objects
+ * and does not use the absolute value because it is updated in each frame.
+ */
+struct Material {
+    // First element to support sorting.
+    BlendMode blend_mode = BlendMode::OFF;
+    // Second element to support sorting.
+    // As the name suggests, this flag shall only affect
+    // continuously blended materials and therefore
+    // has a lower priority than the blending mode.
+    int continuous_blending_z_order = 0;
+    // Third element to support sorting.
+    DepthFunc depth_func = DepthFunc::LESS;
+    bool depth_test = true;
+    BlendingPassType blending_pass = BlendingPassType::LATE;
+    std::vector<BlendMapTexture> textures_color;
+    std::vector<BlendMapTexture> textures_alpha;
+    float period_world = 0.f;
+    VariableAndHash<std::string> reflection_map;
+    VariableAndHash<std::string> dirt_texture;
+    InteriorTextures interior_textures;
+    std::vector<float> continuous_layer_x;
+    std::vector<float> continuous_layer_y;
+    ExternalRenderPassType occluded_pass = ExternalRenderPassType::NONE;
+    ExternalRenderPassType occluder_pass = ExternalRenderPassType::NONE;
+    ParticleType skidmarks = ParticleType::NONE;
+    OrderableFixedArray<float, 4> alpha_distances = { default_linear_distances };
+    AggregateMode aggregate_mode = AggregateMode::NONE;
+    TransformationMode transformation_mode = TransformationMode::ALL;
+    std::vector<BillboardAtlasInstance> billboard_atlas_instances;
+    size_t number_of_frames = 1;
+    bool has_animated_textures = false;
+    bool cull_faces = true;
+    bool reorient_uv0 = false;
+    Shading shading;
+    float alpha = 1.f;
+    bool reflect_only_y = false;
+    float draw_distance_add = 500;
+    float draw_distance_slop = 10;
+    size_t draw_distance_noperations = 0;
+    bool dynamically_lighted = false;
+    Material& compute_color_mode();
+    const BillboardAtlasInstance& billboard_atlas_instance(
+        BillboardId billboard_id,
+        const std::string& name) const;
+    ScenePos max_center_distance2(
+        BillboardId billboard_id,
+        const Morphology& morphology,
+        const std::string& name) const;
+    ExternalRenderPassType get_occluder_pass(
+        BillboardId billboard_id,
+        const std::string& name) const;
+    std::string identifier() const;
+    inline auto rendering_sorting_key() const {
+        return std::make_tuple(blend_mode, continuous_blending_z_order, depth_func);
+    }
+    std::partial_ordering operator <=> (const Material&) const = default;
+    template <class Archive>
+    void serialize(Archive& archive) {
+        archive(blend_mode);
+        archive(continuous_blending_z_order);
+        archive(depth_func);
+        archive(depth_test);
+        archive(blending_pass);
+        archive(textures_color);
+        archive(textures_alpha);
+        archive(period_world);
+        archive(reflection_map);
+        archive(dirt_texture);
+        archive(interior_textures);
+        archive(continuous_layer_x);
+        archive(continuous_layer_y);
+        archive(occluded_pass);
+        archive(occluder_pass);
+        archive(skidmarks);
+        archive(alpha_distances);
+        archive(aggregate_mode);
+        archive(transformation_mode);
+        archive(billboard_atlas_instances);
+        archive(number_of_frames);
+        archive(cull_faces);
+        archive(reorient_uv0);
+        archive(has_animated_textures);
+        archive(shading);
+        archive(alpha);
+        archive(reflect_only_y);
+        archive(draw_distance_add);
+        archive(draw_distance_slop);
+        archive(draw_distance_noperations);
+        archive(dynamically_lighted);
+    }
+};
+
+}

@@ -1,0 +1,49 @@
+#pragma once
+#include <VehicleArena/Math/Fixed_Math.hpp>
+#include <VehicleArena/Math/Orderable_Fixed_Array.hpp>
+#include <cmath>
+#include <compare>
+#include <stdexcept>
+
+namespace VA {
+
+template <typename TData, size_t... tshape>
+class FixedArray;
+
+template <class TPos>
+class VertexHeightBinding {
+    static constexpr const TPos UNDEFINED = std::numeric_limits<TPos>::max();
+public:
+    VertexHeightBinding()
+        : value_{ UNDEFINED, UNDEFINED }
+    {}
+    VertexHeightBinding& operator = (const FixedArray<TPos, 2>& v) {
+        if (!is_undefined()) {
+            throw std::runtime_error("Height binding already set");
+        }
+        if (any(v == UNDEFINED)) {
+            throw std::runtime_error("Height binding value forbidden");
+        }
+        value_ = v;
+        return *this;
+    }
+    std::strong_ordering operator <=> (const FixedArray<TPos, 2>& v) const {
+        if (is_undefined()) {
+            throw std::runtime_error("Height binding undefined");
+        }
+        return make_orderable(value_) <=> make_orderable(v);
+    }
+    const FixedArray<TPos, 2>& value() const {
+        return value_;
+    }
+    FixedArray<TPos, 2>& value() {
+        return value_;
+    }
+private:
+    bool is_undefined() const {
+        return all(value_ == UNDEFINED);
+    }
+    FixedArray<TPos, 2> value_;
+};
+
+}

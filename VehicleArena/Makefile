@@ -53,7 +53,7 @@ clang-tidy:
 	find Mlib -iname "*.cpp" -exec clang-tidy '{}' -checks=-clang-diagnostic-gnu-designator -- -I. ';'
 
 cppcheck:
-	cppcheck . -i Mlib/Geometry/Intersection/Triangle_Triangle_Intersection.cpp
+	cppcheck . -i Mlib/Geometry/Primitives/Triangle_Triangle_Intersection.cpp
 
 recastnavigation:
 	mkdir -p RecastBuild

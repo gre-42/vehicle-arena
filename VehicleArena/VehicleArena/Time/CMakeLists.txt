@@ -1,9 +1,9 @@
 include(../../CMakeCommands.cmake)
 
-set(excluded_files "")
+set(vehicle_arena_excluded_files "")
 
-my_add_library(VehicleArenaTime "1" "" "${excluded_files}")
+my_add_library(VehicleArenaTime "1" "" "${vehicle_arena_excluded_files}")
 
 target_link_libraries(VehicleArenaTime VehicleArenaOs)
 
-include_directories(${VehicleArena_INCLUDE_DIR})
+target_include_directories(VehicleArenaTime PUBLIC ${VehicleArena_INCLUDE_DIR})

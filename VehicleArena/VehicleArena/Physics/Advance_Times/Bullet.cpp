@@ -1,0 +1,230 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#include "Bullet.hpp"
+#include <VehicleArena/Audio/Audio_Entity_State.hpp>
+#include <VehicleArena/Geometry/Coordinates/Gl_Look_At.hpp>
+#include <VehicleArena/Math/Fixed_Rodrigues.hpp>
+#include <VehicleArena/Physics/Bullets/Bullet_Properties.hpp>
+#include <VehicleArena/Physics/Containers/Advance_Times.hpp>
+#include <VehicleArena/Physics/Dynamic_Lights/Dynamic_Lights.hpp>
+#include <VehicleArena/Physics/Interfaces/Damage_Source.hpp>
+#include <VehicleArena/Physics/Interfaces/IDamageable.hpp>
+#include <VehicleArena/Physics/Interfaces/IPlayer.hpp>
+#include <VehicleArena/Physics/Interfaces/ITeam.hpp>
+#include <VehicleArena/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <VehicleArena/Physics/Smoke_Generation/Smoke_Particle_Generator.hpp>
+#include <VehicleArena/Scene_Graph/Containers/Scene.hpp>
+#include <VehicleArena/Scene_Graph/Elements/Animation_State.hpp>
+#include <VehicleArena/Scene_Graph/Elements/Scene_Node.hpp>
+#include <VehicleArena/Scene_Graph/Instances/Static_World.hpp>
+#include <VehicleArena/Scene_Graph/Instantiation/Child_Instantiation_Options.hpp>
+#include <VehicleArena/Scene_Graph/Interfaces/IDynamic_Light.hpp>
+#include <VehicleArena/Scene_Graph/Interfaces/IScene_Node_Resource.hpp>
+#include <VehicleArena/Scene_Graph/Interfaces/ITrail_Extender.hpp>
+#include <VehicleArena/Scene_Graph/Resources/Renderable_Resource_Filter.hpp>
+#include <VehicleArena/Scene_Graph/Resources/Scene_Node_Resources.hpp>
+
+using namespace VA;
+
+Bullet::Bullet(
+    Scene& scene,
+    std::function<void(const AudioSourceState<ScenePos>&, const VariableAndHash<std::string>&)> generate_bullet_explosion_audio,
+    std::function<void(const AudioSourceState<ScenePos>*)> update_engine_audio_position,
+    SmokeParticleGenerator& smoke_generator,
+    AdvanceTimes& advance_times,
+    RigidBodyVehicle& rigid_body,
+    RigidBodies& rigid_bodies,
+    IPlayer* gunner,
+    ITeam* team,
+    VariableAndHash<std::string> bullet_node_name,
+    const BulletProperties& props,
+    std::unique_ptr<ITrailExtender> trace_extender,
+    DynamicLights& dynamic_lights,
+    const StaticWorld& world,
+    RotateBullet rotate_bullet)
+    : scene_{ scene }
+    , generate_bullet_explosion_audio_{ std::move(generate_bullet_explosion_audio) }
+    , update_engine_audio_position_{ std::move(update_engine_audio_position) }
+    , smoke_generator_{ smoke_generator }
+    , advance_times_{ advance_times }
+    , rigid_body_pulses_{ rigid_body.rbp_ }
+    , rigid_bodies_{ rigid_bodies }
+    , gunner_{ gunner }
+    , team_{ team }
+    , bullet_node_name_{ std::move(bullet_node_name) }
+    , props_{ props }
+    , lifetime_{ 0.f }
+    , trail_generator_{ smoke_generator }
+    , has_trail_{ !props.trail.particle.resource_name->empty() }
+    , trace_extender_{ std::move(trace_extender) }
+    , rotate_bullet_{ rotate_bullet == RotateBullet::YES }
+    , dynamic_lights_{ dynamic_lights }
+    , gunner_on_destroy_{ (gunner_ != nullptr) ? &gunner_->on_destroy_player() : nullptr, CURRENT_SOURCE_LOCATION }
+    , team_on_destroy_{ (team_ != nullptr) ? &team_->on_destroy_team() : nullptr, CURRENT_SOURCE_LOCATION }
+{
+    if (!props_.dynamic_light_configuration_before_impact.empty()) {
+        auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
+        light_before_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_before_impact, func, world.time);
+    }
+    if (!gunner_on_destroy_.is_null()) {
+        gunner_on_destroy_.add([this](){ gunner_ = nullptr; }, CURRENT_SOURCE_LOCATION);
+    }
+    if (!team_on_destroy_.is_null()) {
+        team_on_destroy_.add([this](){ team_ = nullptr; }, CURRENT_SOURCE_LOCATION);
+    }
+    advance_times_.add_advance_time({ *this, CURRENT_SOURCE_LOCATION }, CURRENT_SOURCE_LOCATION);
+}
+
+Bullet::~Bullet() {
+    on_destroy.clear();
+    if (update_engine_audio_position_) {
+        update_engine_audio_position_(nullptr);
+    }
+}
+
+void Bullet::advance_time(float dt, const StaticWorld& world) {
+    lifetime_ += dt;
+    if (lifetime_ > props_.max_lifetime) {
+        scene_.delete_root_node(bullet_node_name_);
+        // Deactivated, because the object is deleted here because of "delete_root_node"
+        // lifetime_ = INFINITY;
+        return;
+    }
+    if (rotate_bullet_) {
+        auto R = gl_lookat_relative(
+            rigid_body_pulses_.v_com_ / std::sqrt(sum(squared(rigid_body_pulses_.v_com_))),
+            rigid_body_pulses_.rotation_.column(1));
+        if (!R.has_value()) {
+            throw std::runtime_error("Could not update bullet rotation");
+        }
+        rigid_body_pulses_.rotation_ = *R;
+    }
+    if (has_trail_) {
+        maybe_generate_.advance_time(dt);
+        if (maybe_generate_(props_.trail.generation_dt)) {
+            trail_generator_.generate(
+                rigid_body_pulses_.abs_position(),
+                fixed_zeros<float, 3>(),
+                fixed_zeros<float, 3>(),
+                0.f,
+                props_.trail.particle,
+                "trail",
+                ParticleContainer::INSTANCE,
+                world);
+        }
+    }
+    if (trace_extender_ != nullptr) {
+        trace_extender_->append_location(
+            rigid_body_pulses_.abs_transformation(),
+            TrailLocationType::MIDPOINT,
+            world);
+    }
+    if (update_engine_audio_position_) {
+        AudioSourceState<ScenePos> state{rigid_body_pulses_.abs_position(), rigid_body_pulses_.v_com_};
+        update_engine_audio_position_(&state);
+    }
+}
+
+void Bullet::notify_collided(
+    const FixedArray<ScenePos, 3>& intersection_point,
+    const StaticWorld& world,
+    RigidBodyVehicle& rigid_body,
+    PhysicsMaterial physics_material,
+    CollisionRole collision_role,
+    CollisionType& collision_type,
+    bool& abort)
+{
+    if (lifetime_ == INFINITY) {
+        abort = true;
+        return;
+    }
+    lifetime_ = INFINITY;
+    collision_type = CollisionType::GO_THROUGH;
+    cause_damage(intersection_point, rigid_body);
+    if (!props_.dynamic_light_configuration_after_impact.empty()) {
+        auto func = [&b = rigid_body.rbp_]() { return b.abs_position(); };
+        light_after_impact_ = dynamic_lights_.instantiate(props_.dynamic_light_configuration_after_impact, func, world.time);
+    }
+    if (light_before_impact_ != nullptr) {
+        light_before_impact_ = nullptr;
+    }
+    for (const auto& e : props_.explosions) {
+        if (e.materials.has_value() &&
+            !e.materials->contains(physics_material & PhysicsMaterial::SURFACE_BASE_MASK))
+        {
+            continue;
+        }
+        smoke_generator_.generate_root(
+            e.resource_name,
+            VariableAndHash<std::string>{"explosion" + smoke_generator_.generate_suffix()},
+            intersection_point,
+            fixed_zeros<float, 3>(),
+            fixed_zeros<float, 3>(),
+            INFINITY,
+            0.f,
+            e.animation_time,
+            e.particle_container,
+            world);
+        if (generate_bullet_explosion_audio_ && !e.audio_resource_name->empty()) {
+            generate_bullet_explosion_audio_({intersection_point, fixed_zeros<float, 3>()}, e.audio_resource_name);
+        }
+    }
+    if (trace_extender_ != nullptr) {
+        trace_extender_->append_location(
+            TransformationMatrix<float, ScenePos, 3>{rigid_body_pulses_.rotation_, intersection_point},
+            TrailLocationType::ENDPOINT,
+            world);
+    }
+}
+
+void Bullet::notify_kill(RigidBodyVehicle& rigid_body_vehicle) {
+    if (gunner_ != nullptr) {
+        gunner_->notify_kill(rigid_body_vehicle);
+    } else if (team_ != nullptr) {
+        team_->notify_kill(rigid_body_vehicle);
+    }
+}
+
+void Bullet::cause_damage(RigidBodyVehicle& rigid_body, float amount) {
+    if (rigid_body.damageable_ == nullptr) {
+        return;
+    }
+    if (rigid_body.damageable_->health() <= 0.f) {
+        return;
+    }
+    rigid_body.damageable_->damage(amount, DamageSource::BULLET);
+    if (rigid_body.damageable_->health() <= 0.f) {
+        notify_kill(const_cast<RigidBodyVehicle&>(rigid_body));
+        for (const auto& [p, _] : rigid_body.passengers_) {
+            cause_damage(*p.get(), INFINITY);
+        }
+    }
+}
+
+void Bullet::cause_damage(
+    const FixedArray<ScenePos, 3>& intersection_point,
+    RigidBodyVehicle& rigid_body)
+{
+    if (props_.damage_radius == 0) {
+        cause_damage(rigid_body, props_.damage);
+    } else {
+        for (const auto& rbm : rigid_bodies_.objects()) {
+            const RigidBodyVehicle& rb = rbm.rigid_body.get();
+            if ((rb.damageable_ == nullptr) ||
+                (rb.damageable_->health() <= 0.f))
+            {
+                continue;
+            }
+            ScenePos dist2 = sum(squared(rb.rbp_.abs_position() - intersection_point));
+            if (dist2 > squared(props_.damage_radius)) {
+                continue;
+            }
+            cause_damage(const_cast<RigidBodyVehicle&>(rb), props_.damage);
+        }
+    }
+}

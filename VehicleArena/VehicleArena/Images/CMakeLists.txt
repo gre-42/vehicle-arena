@@ -8,6 +8,6 @@ if (NOT ANDROID)
     target_precompile_headers(VehicleArenaImages PRIVATE ../Misc/Precompiled_Header.hpp)
 endif()
 
-include_directories(${VehicleArena_INCLUDE_DIR})
+target_include_directories(VehicleArenaImages PUBLIC ${VehicleArena_INCLUDE_DIR})
 
 target_link_libraries(VehicleArenaImages VehicleArenaOs VehicleArenaMath VehicleArenaStbCpp)

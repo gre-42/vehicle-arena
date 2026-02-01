@@ -9,6 +9,7 @@
 #include <VehicleArena/Geometry/Primitives/Convex_Polygon.hpp>
 #include <VehicleArena/Initialization/Uninitialized.hpp>
 #include <VehicleArena/Math/Fixed_Math.hpp>
+#include <VehicleArena/Math/Simd.hpp>
 #include <VehicleArena/Stats/Clamped.hpp>
 #include <VehicleArena/Stats/Min_Max.hpp>
 #include <array>

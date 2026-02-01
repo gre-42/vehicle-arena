@@ -1,0 +1,258 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#include "Physics_Engine.hpp"
+#include <VehicleArena/Geometry/Primitives/Intersectors/Intersection_Info.hpp>
+#include <VehicleArena/Memory/Destruction_Functions_Removeal_Tokens_Ref.hpp>
+#include <VehicleArena/Physics/Actuators/Engine_Power_Intent.hpp>
+#include <VehicleArena/Physics/Actuators/Rigid_Body_Engine.hpp>
+#include <VehicleArena/Physics/Collision/Grind_Info.hpp>
+#include <VehicleArena/Physics/Collision/Record/Collision_History.hpp>
+#include <VehicleArena/Physics/Collision/Record/Intersection_Scene.hpp>
+#include <VehicleArena/Physics/Collision/Resolve/Constraints.hpp>
+#include <VehicleArena/Physics/Interfaces/IAdvance_Time.hpp>
+#include <VehicleArena/Physics/Interfaces/IControllable.hpp>
+#include <VehicleArena/Physics/Interfaces/IExternal_Force_Provider.hpp>
+#include <VehicleArena/Physics/Physics_Engine/Colliders/Collide_Concave_Triangles.hpp>
+#include <VehicleArena/Physics/Physics_Engine/Colliders/Collide_Grind_Infos.hpp>
+#include <VehicleArena/Physics/Physics_Engine/Colliders/Collide_Raycast_Intersections.hpp>
+#include <VehicleArena/Physics/Physics_Engine/Colliders/Collide_With_Movables.hpp>
+#include <VehicleArena/Physics/Physics_Engine/Colliders/Collide_With_Terrain.hpp>
+#include <VehicleArena/Physics/Physics_Engine/Physics_Phase.hpp>
+#include <VehicleArena/Physics/Rigid_Body/Rigid_Body_Vehicle.hpp>
+#include <VehicleArena/Physics/Smoke_Generation/Contact_Smoke_Generator.hpp>
+#include <VehicleArena/Scene_Graph/Interfaces/ITrail_Renderer.hpp>
+#include <VehicleArena/Testing/Assert.hpp>
+#include <stdexcept>
+
+using namespace VA;
+
+PhysicsEngine::PhysicsEngine(const PhysicsEngineConfig& cfg)
+    : rigid_bodies_{ cfg }
+    , collision_query_{ *this }
+    , collision_direction_{ CollisionDirection::FORWARD }
+    , surface_contact_db_{ nullptr }
+    , contact_smoke_generator_{ nullptr }
+    , trail_renderer_{ nullptr }
+    , cfg_{ cfg }
+{}
+
+PhysicsEngine::~PhysicsEngine() = default;
+
+void PhysicsEngine::compute_transformed_objects(const PhysicsPhase* phase) {
+    rigid_bodies_.transformed_objects_.remove_if([](const RigidBodyAndIntersectableMeshes& rbtm){
+        return (rbtm.rigid_body->mass() != INFINITY);
+    });
+    for (auto& o : rigid_bodies_.objects_) {
+        if ((o.rigid_body->mass() == INFINITY) ||
+            o.rigid_body->is_deactivated_avatar() ||
+            !o.has_meshes())
+        {
+            continue;
+        }
+        if ((phase != nullptr) &&
+            (phase->group.penetration_class != PenetrationClass::BULLET_LINE) &&
+             !phase->group.rigid_bodies.contains(&o.rigid_body->rbp_))
+        {
+            continue;
+        }
+        rigid_bodies_.transform_object_and_add(o);
+    }
+}
+
+void PhysicsEngine::collide(
+    const StaticWorld& world,
+    std::list<Beacon>* beacons,
+    const PhysicsPhase& phase,
+    BaseLog* base_log)
+{
+    rigid_bodies_.notify_colliding_start();
+    for (const auto& o : rigid_bodies_.transformed_objects()) {
+        o.rigid_body->reset_forces(phase);
+    }
+    for (const auto& co : controllables_) {
+        co->notify_reset(cfg_, phase);
+    }
+    std::list<std::unique_ptr<IContactInfo>> contact_infos;
+    permanent_contacts_.extend_contact_infos(cfg_, contact_infos);
+    std::unordered_map<OrderableFixedArray<CompressedScenePos, 2, 3>, IntersectionSceneAndContact> raycast_intersections;
+    std::unordered_map<RigidBodyVehicle*, std::list<IntersectionSceneAndContact>> concave_t0_intersections;
+    std::unordered_map<RigidBodyVehicle*, GrindInfo> grind_infos;
+    std::unordered_map<RigidBodyVehicle*, std::list<FixedArray<ScenePos, 3>>> ridge_intersection_points;
+    if (surface_contact_db_ == nullptr) {
+        throw std::runtime_error("surface_contact_db not set");
+    }
+    if (contact_smoke_generator_ == nullptr) {
+        throw std::runtime_error("contact_smoke_generator not set");
+    }
+    if (trail_renderer_ == nullptr) {
+        throw std::runtime_error("trail_renderer not set");
+    }
+    CollisionHistory history{
+        .cfg = cfg_,
+        .phase = phase,
+        .world = world,
+        .surface_contact_db = *surface_contact_db_,
+        .csg = *contact_smoke_generator_,
+        .tr = *trail_renderer_,
+        .beacons = beacons,
+        .contact_infos = contact_infos,
+        .raycast_intersections = raycast_intersections,
+        .concave_t0_intersections = concave_t0_intersections,
+        .grind_infos = grind_infos,
+        .base_log = base_log
+    };
+    for (const auto& efp : external_force_providers_) {
+        efp->increment_external_forces(cfg_, phase, world);
+    }
+    for (const auto& o : rigid_bodies_.transformed_objects()) {
+        o.rigid_body->collide_with_air(history);
+    }
+    collision_direction_ = (collision_direction_ == CollisionDirection::FORWARD)
+        ? CollisionDirection::BACKWARD
+        : CollisionDirection::FORWARD;
+    if (phase.group.penetration_class != PenetrationClass::NONE) {
+        collide_with_movables(
+            collision_direction_,
+            rigid_bodies_,
+            history);
+        collide_with_terrain(
+            rigid_bodies_,
+            history);
+    }
+    for (const auto& o : rigid_bodies_.transformed_objects()) {
+        o.rigid_body->finalize_collisions(history);
+    }
+    // Handling rays before grind_infos so new grind_infos can be created
+    // by rays also.
+    collide_raycast_intersections(raycast_intersections);
+    collide_grind_infos(cfg_, phase, world, contact_infos, grind_infos);
+    collide_concave_triangles(cfg_, concave_t0_intersections, ridge_intersection_points);
+    solve_contacts(contact_infos, cfg_.dt_substeps(phase));
+    rigid_bodies_.notify_colliding_end();
+}
+
+void PhysicsEngine::move_rigid_bodies(
+    const StaticWorld& world,
+    std::list<Beacon>* beacons,
+    const PhysicsPhase& phase)
+{
+    for (const auto& rbm : rigid_bodies_.objects_) {
+        if (rbm.rigid_body->is_deactivated_avatar()) {
+            continue;
+        }
+        auto& rb = rbm.rigid_body;
+        assert_true(rb->mass() != INFINITY);
+        rb->advance_time(cfg_, world, beacons, phase);
+        if (contact_smoke_generator_ == nullptr) {
+            throw std::runtime_error("contact_smoke_generator not set");
+        }
+        contact_smoke_generator_->advance_time(rb.get(), cfg_, phase);
+    }
+}
+
+void PhysicsEngine::move_particles(const StaticWorld& world)
+{
+    if (trail_renderer_ != nullptr) {
+        trail_renderer_->move(cfg_.dt, world);
+    }
+}
+
+void PhysicsEngine::move_advance_times(const StaticWorld& world) {
+    advance_times_.advance_time(cfg_.dt, world);
+}
+
+void PhysicsEngine::burn_in(
+    const StaticWorld& world,
+    float duration)
+{
+    for (const auto& o : rigid_bodies_.objects_) {
+        if (o.rigid_body->is_deactivated_avatar()) {
+            continue;
+        }
+        for (auto& [_, e] : o.rigid_body->engines_) {
+            e.set_surface_power(EnginePowerIntent{
+                .state = EngineState::OFF,
+                .surface_power = NAN});
+        }
+    }
+    for (float time = 0; time < duration; time += cfg_.dt) {
+        for (const auto& g : rigid_bodies_.collision_groups()) {
+            for (size_t i = 0; i < g.nsubsteps; ++i) {
+                auto phase = PhysicsPhase{
+                    .burn_in = true,
+                    .substep = i,
+                    .group = g
+                };
+                compute_transformed_objects(&phase);
+                collide(
+                    world,
+                    nullptr,                            // beacons
+                    phase,
+                    nullptr);                           // base_log
+                if (time < duration / 2) {
+                    for (const auto& o : rigid_bodies_.objects_) {
+                        if (o.rigid_body->is_deactivated_avatar()) {
+                            continue;
+                        }
+                        o.rigid_body->rbp_.w_ = 0;
+                    }
+                }
+                move_rigid_bodies(
+                    world,
+                    nullptr,  // nullptr=beacons
+                    phase);
+            }
+        }
+    }
+    compute_transformed_objects(nullptr);
+}
+
+void PhysicsEngine::set_surface_contact_db(SurfaceContactDb& surface_contact_db) {
+    if (surface_contact_db_ != nullptr) {
+        throw std::runtime_error("Surface contact DB already set");
+    }
+    surface_contact_db_ = &surface_contact_db;
+}
+
+void PhysicsEngine::set_contact_smoke_generator(ContactSmokeGenerator& contact_smoke_generator) {
+    if (contact_smoke_generator_ != nullptr) {
+        throw std::runtime_error("Contact smoke generator already set");
+    }
+    contact_smoke_generator_ = &contact_smoke_generator;
+}
+
+void PhysicsEngine::set_trail_renderer(ITrailRenderer& trail_renderer) {
+    if (trail_renderer_ != nullptr) {
+        throw std::runtime_error("Trail renderer already set");
+    }
+    trail_renderer_ = &trail_renderer;
+}
+
+void PhysicsEngine::add_external_force_provider(IExternalForceProvider& efp)
+{
+    external_force_providers_.push_back(&efp);
+}
+
+void PhysicsEngine::remove_external_force_provider(IExternalForceProvider& efp) {
+    if (external_force_providers_.remove_if([&efp](const auto* e){ return e == &efp; }) != 1) {
+        verbose_abort("Could not remove exactly one external force provider");
+    }
+}
+
+void PhysicsEngine::add_controllable(IControllable& co)
+{
+    if (!controllables_.insert(&co).second) {
+        throw std::runtime_error("IControllable already added");
+    }
+}
+
+void PhysicsEngine::remove_controllable(IControllable& co) {
+    if (controllables_.erase(&co) != 1) {
+        throw std::runtime_error("IControllable does not exist");
+    }
+}

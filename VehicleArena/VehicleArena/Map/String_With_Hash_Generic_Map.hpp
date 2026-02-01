@@ -1,0 +1,171 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#pragma once
+#include <VehicleArena/Hashing/Variable_And_Hash.hpp>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+namespace VA {
+
+template <class TBaseMap>
+class StringWithHashGenericMap {
+public:
+    using mapped_type = TBaseMap::mapped_type;
+    using value_type = TBaseMap::value_type;
+    using key_type = TBaseMap::key_type;
+    using node_type = TBaseMap::node_type;
+    using iterator = TBaseMap::iterator;
+    using const_iterator = TBaseMap::const_iterator;
+
+    explicit StringWithHashGenericMap(std::string value_name)
+        : value_name_{ std::move(value_name) }
+    {}
+    ~StringWithHashGenericMap() = default;
+
+    template <class... Args>
+    mapped_type& add(key_type key, Args &&...args) {
+        auto res = elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
+        if (!res.second) {
+            throw std::runtime_error(value_name_ + " with name \"" + *key + "\" already exists");
+        }
+        return res.first->second;
+    }
+
+    template <class... Args>
+    auto try_emplace(key_type key, Args &&...args) {
+        return elements_.try_emplace(std::move(key), std::forward<Args>(args)...);
+    }
+
+    decltype(auto) insert(node_type&& node) {
+        return elements_.insert(std::move(node));
+    }
+
+    void insert_or_assign(const key_type& key, const mapped_type& value) {
+        elements_.insert_or_assign(key, value);
+    }
+
+    void clear() {
+        elements_.clear();
+    }
+
+    decltype(auto) find(const key_type& key) {
+        return elements_.find(key);
+    }
+
+    decltype(auto) find(const key_type& key) const {
+        return elements_.find(key);
+    }
+
+    void erase(const const_iterator& it) {
+        elements_.erase(it);
+    }
+
+    size_t erase(const key_type& key) {
+        return elements_.erase(key);
+    }
+
+    template <class TPredicate>
+    void erase_if(const TPredicate& predicate) {
+        std::erase_if(elements_, predicate);
+    }
+
+    bool contains(const key_type& key) const {
+        return elements_.contains(key);
+    }
+
+    mapped_type* try_get(const key_type& key) {
+        auto it = elements_.find(key);
+        if (it == elements_.end()) {
+            return nullptr;
+        }
+        return &it->second;
+    }
+
+    const mapped_type* try_get(const key_type& key) const {
+        return const_cast<StringWithHashGenericMap*>(this)->try_get(key);
+    }
+
+    node_type extract(const const_iterator& it) {
+        return elements_.extract(it);
+    }
+
+    node_type extract(const key_type& key) {
+        auto res = elements_.extract(key);
+        if (res.empty()) {
+            throw std::runtime_error(value_name_ + " with name \"" + *key + "\" does not exist");
+        }
+        return res;
+    }
+
+    node_type try_extract(const key_type& key) {
+        return elements_.extract(key);
+    }
+
+    mapped_type& get(const key_type& key) {
+        auto it = elements_.find(key);
+        if (it == elements_.end()) {
+            throw std::runtime_error(value_name_ + " with name \"" + *key + "\" does not exist");
+        }
+        return it->second;
+    }
+
+    const mapped_type& get(const key_type& name) const {
+        return const_cast<StringWithHashGenericMap*>(this)->get(name);
+    }
+
+    bool empty() const {
+        return elements_.empty();
+    }
+
+    size_t size() const {
+        return elements_.size();
+    }
+
+    decltype(auto) begin() { return elements_.begin(); }
+    decltype(auto) end() { return elements_.end(); }
+    decltype(auto) begin() const { return elements_.begin(); }
+    decltype(auto) end() const { return elements_.end(); }
+
+    std::vector<key_type> keys() const {
+        std::vector<key_type> result;
+        result.reserve(this->size());
+        for (const auto& [k, _] : *this) {
+            result.push_back(k);
+        }
+        return result;
+    }
+
+    // template <class Archive>
+    // void serialize(Archive& archive) {
+    //     archive(value_name_);
+    //     archive(elements_);
+    // }
+    // 
+    // template<typename Archive>
+    // static void load_and_construct(
+    //     Archive& archive,
+    //     cereal::construct<StringWithHashGenericMap<TBaseMap>> &construct)
+    // {
+    //     std::string value_name;
+    //     archive(value_name);
+    //     auto& obj = construct(value_name);
+    //     archive(obj.elements_);
+    // }
+    TBaseMap& elements() {
+        return elements_;
+    }
+    const TBaseMap& elements() const {
+        return elements_;
+    }
+private:
+    TBaseMap elements_;
+    std::string value_name_;
+};
+
+}

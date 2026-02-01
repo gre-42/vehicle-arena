@@ -1,3 +1,6 @@
 [submodule "VehicleArena/recastnavigation"]
 	path = VehicleArena/recastnavigation
 	url = https://github.com/recastnavigation/recastnavigation.git
+[submodule "VehicleArena/cereal"]
+	path = VehicleArena/cereal
+	url = https://github.com/USCiLab/cereal.git

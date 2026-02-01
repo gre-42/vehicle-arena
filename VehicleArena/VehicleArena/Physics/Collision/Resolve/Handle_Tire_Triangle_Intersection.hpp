@@ -1,0 +1,33 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#pragma once
+#include <VehicleArena/Array/Fixed_Array.hpp>
+
+namespace VA {
+
+class RigidBodyVehicle;
+struct PhysicsEngineConfig;
+struct PhysicsPhase;
+struct TirePowerIntent;
+
+void handle_tire_triangle_intersection(
+    const TirePowerIntent& P,
+    RigidBodyVehicle& rb,
+    const FixedArray<float, 3>& v_street,
+    const FixedArray<float, 3>& vc_street,
+    const FixedArray<float, 3>& vc,
+    const FixedArray<float, 3>& n3,
+    float v0,
+    const FixedArray<float, 3>& surface_normal,
+    const PhysicsEngineConfig& cfg,
+    const PhysicsPhase& phase,
+    size_t tire_id,
+    float& force_min,
+    float& force_max);
+
+}

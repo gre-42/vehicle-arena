@@ -6,9 +6,11 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #pragma once
+#include <VehicleArena/Misc/Object.hpp>
 #include <VehicleArena/Scene_Config/Scene_Precision.hpp>
 #include <cstddef>
-#include <list>
+#include <cstdint>
+#include <map>
 
 namespace VA {
 
@@ -16,12 +18,12 @@ struct DeferredRenderable;
 template <typename TData, size_t... tshape>
 class FixedArray;
 
-class IRenderable {
+class IRenderable: public virtual Object {
 public:
+    virtual uint32_t z_order() const = 0;
     virtual void render(
-        const FixedArray<float, 4, 4>& vp,
-        const FixedArray<ScenePos, 3>& offset,
-        std::list<DeferredRenderable>& deferred) = 0;
+        const FixedArray<float, 4, 4>& mvp,
+        const FixedArray<ScenePos, 3>& offset) = 0;
 };
 
 }

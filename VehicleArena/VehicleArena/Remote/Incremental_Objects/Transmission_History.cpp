@@ -1,0 +1,101 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#include "Transmission_History.hpp"
+#include <VehicleArena/Io/Binary.hpp>
+#include <VehicleArena/Remote/Incremental_Objects/Remote_Object_Id.hpp>
+#include <VehicleArena/Remote/Incremental_Objects/Transmitted_Fields.hpp>
+#include <VehicleArena/Scene_Config/Remote_Event_History_Duration.hpp>
+
+using namespace VA;
+
+TransmissionHistoryReader::TransmissionHistoryReader(
+    const LocalSceneLevel& home_scene_level,
+    std::chrono::steady_clock::time_point base_time)
+    : home_scene_level{ home_scene_level }
+    , base_time_{ base_time }
+{}
+
+TransmissionHistoryReader::~TransmissionHistoryReader() = default;
+
+RemoteObjectId TransmissionHistoryReader::read_remote_object_id(
+    std::istream& istr,
+    TransmittedFields transmitted_fields,
+    IoVerbosity verbosity)
+{
+    if (!any(transmitted_fields & TransmittedFields::SITE_ID)) {
+        if (!site_id_.has_value()) {
+            throw std::runtime_error("Site ID neither set in history nor in current transmission");
+        }
+        return RemoteObjectId{
+            *site_id_,
+            read_binary<LocalObjectId>(istr, "object ID", verbosity)
+        };
+    } else {
+        auto remote_object_id = read_binary<RemoteObjectId>(istr, "remote object ID", verbosity);
+        site_id_ = remote_object_id.site_id;
+        return remote_object_id;
+    }
+}
+
+std::chrono::steady_clock::time_point TransmissionHistoryReader::read_time(
+    std::istream& istr,
+    IoVerbosity verbosity) const
+{
+    if (base_time_ == std::chrono::steady_clock::time_point()) {
+        throw std::runtime_error("Attempt to read time, but no base time was set");
+    }
+    auto offset = read_binary<RemoteEventHistoryOffset>(istr, "remote time offset", verbosity);
+    if (offset >= base_time_.time_since_epoch()) {
+        throw std::runtime_error("Time offset larger or equal the time since epoch");
+    }
+    return base_time_ - offset;
+}
+
+TransmissionHistoryWriter::TransmissionHistoryWriter(
+    std::chrono::steady_clock::time_point base_time)
+    : base_time_{ base_time }
+    , history_{ TransmissionHistory::NONE }
+{}
+
+TransmissionHistoryWriter::~TransmissionHistoryWriter() = default;
+
+void TransmissionHistoryWriter::write_remote_object_id(
+    std::ostream& ostr,
+    const RemoteObjectId& remote_object_id,
+    TransmittedFields transmitted_fields)
+{
+    if (any(transmitted_fields & TransmittedFields::SITE_ID)) {
+        throw std::runtime_error("Transmitted fields unexpectedly have the SITE_ID flag set");
+    }
+    if (any(history_ & TransmissionHistory::SITE_ID)) {
+        write_binary(ostr, transmitted_fields, "transmitted fields");
+        write_binary(ostr, remote_object_id.object_id, "object ID");
+    } else {
+        write_binary(ostr, transmitted_fields | TransmittedFields::SITE_ID, "transmitted fields");
+        write_binary(ostr, remote_object_id, "remote object ID");
+        history_ |= TransmissionHistory::SITE_ID;
+    }
+}
+
+void TransmissionHistoryWriter::write_time(
+    std::ostream& ostr,
+    std::chrono::steady_clock::time_point time) const
+{
+    if (base_time_ == std::chrono::steady_clock::time_point()) {
+        throw std::runtime_error("Attempt to write time, but no base time was set");
+    }
+    auto offset = base_time_ - time;
+    if (offset.count() < 0) {
+        throw std::runtime_error("Time is later than base time");
+    }
+    if (offset > REMOTE_EVENT_HISTORY_DURATION) {
+        throw std::runtime_error("Time offset is larger than the maximum event history duration");
+    }
+    auto remote_offset = std::chrono::duration_cast<RemoteEventHistoryOffset>(offset);
+    write_binary(ostr, remote_offset.count(), "remote time offset");
+}

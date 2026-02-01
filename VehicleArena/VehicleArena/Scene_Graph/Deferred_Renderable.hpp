@@ -7,15 +7,19 @@
 
 #pragma once
 #include <VehicleArena/Array/Fixed_Array.hpp>
+#include <compare>
 #include <cstdint>
-#include <functional>
+#include <memory>
 
 namespace VA {
 
+class IRenderable;
+
 struct DeferredRenderable {
-    int32_t z_order;
-    FixedArray<float, 4, 4> mvp;
-    std::function<void()> render;
+    uint32_t layer;
+    float centroid_distance;
+    std::shared_ptr<IRenderable> renderable;
+    std::strong_ordering operator <=> (const DeferredRenderable&) const = default;
 };
 
 }

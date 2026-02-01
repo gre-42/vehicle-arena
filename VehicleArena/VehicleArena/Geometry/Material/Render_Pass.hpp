@@ -1,0 +1,89 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#pragma once
+#include <iosfwd>
+#include <string>
+
+namespace VA {
+
+/**
+ * Ordering is only important for the occluded-pass, not the occluder-pass.
+ * See Mlib/Render/Renderables/Renderable_Colored_Vertex_Array.cpp:
+ *     "cva->material.occluded_pass < l.second->shadow_render_pass"
+ */
+enum class ExternalRenderPassType {
+    NONE                                    = 0,
+    STANDARD_MASK                           = (1 << 0),
+
+    DIRTMAP_MASK                            = (1 << 1),
+
+    IS_GLOBAL_MASK                          = (1 << 2),
+
+    LIGHTMAP_ANY_MASK                       = (1 << 3),
+    LIGHTMAP_BLOBS_MASK                     = (1 << 4),
+    LIGHTMAP_DEPTH_MASK                     = (1 << 5),
+    LIGHTMAP_COLOR_MASK                     = (1 << 6),
+    LIGHTMAP_EMITS_COLORS_MASK              = (1 << 7),
+    LIGHTMAP_IS_BLACK_MASK                  = (1 << 8),
+    LIGHTMAP_IS_DYNAMIC_MASK                = (1 << 9),
+    LIGHTMAP_IS_LOCAL_MASK                  = (1 << 10),
+
+    LIGHTMAP_GLOBAL_STATIC_MASK             = (1 << 11),
+    LIGHTMAP_GLOBAL_DYNAMIC_MASK            = (1 << 12),
+    LIGHTMAP_BLACK_GLOBAL_STATIC_MASK       = (1 << 13),
+    LIGHTMAP_BLACK_LOCAL_INSTANCES_MASK     = (1 << 14),
+    LIGHTMAP_BLACK_MOVABLES_MASK            = (1 << 15),
+    LIGHTMAP_BLACK_NODE_MASK                = (1 << 16),
+
+    IMPOSTER_NODE_MASK                      = (1 << 17),
+    ZOOM_NODE_MASK                          = (1 << 18),
+    FOREGROUND_MASK                         = (1 << 19),
+    BACKGROUND_MASK                         = (1 << 20),
+
+    STANDARD                                = STANDARD_MASK,
+
+    DIRTMAP                                 = DIRTMAP_MASK | IS_GLOBAL_MASK,
+    LIGHTMAP_BLOBS                          = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_IS_LOCAL_MASK | LIGHTMAP_BLOBS_MASK,
+    LIGHTMAP_DEPTH                          = LIGHTMAP_ANY_MASK | LIGHTMAP_DEPTH_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK,
+    LIGHTMAP_GLOBAL_STATIC                  = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | IS_GLOBAL_MASK           | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_GLOBAL_STATIC_MASK,
+    LIGHTMAP_GLOBAL_DYNAMIC                 = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_EMITS_COLORS_MASK | LIGHTMAP_GLOBAL_DYNAMIC_MASK,
+    LIGHTMAP_BLACK_GLOBAL_STATIC            = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | IS_GLOBAL_MASK           | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_GLOBAL_STATIC_MASK,
+    LIGHTMAP_BLACK_LOCAL_INSTANCES          = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_IS_LOCAL_MASK | LIGHTMAP_BLACK_LOCAL_INSTANCES_MASK,
+    LIGHTMAP_BLACK_MOVABLES                 = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_MOVABLES_MASK,
+    LIGHTMAP_BLACK_NODE                     = LIGHTMAP_ANY_MASK | LIGHTMAP_COLOR_MASK | LIGHTMAP_IS_DYNAMIC_MASK | LIGHTMAP_IS_BLACK_MASK | LIGHTMAP_BLACK_NODE_MASK,
+
+    LIGHTMAP_BLACK_GLOBAL_AND_LOCAL         = LIGHTMAP_BLACK_GLOBAL_STATIC | LIGHTMAP_BLACK_LOCAL_INSTANCES,
+
+    STANDARD_AND_LOCAL_LIGHTMAP             = STANDARD_MASK | LIGHTMAP_IS_LOCAL_MASK,
+
+    IMPOSTER_NODE                           = IMPOSTER_NODE_MASK,
+    ZOOM_NODE                               = ZOOM_NODE_MASK,
+
+    IMPOSTER_OR_ZOOM_NODE                   = IMPOSTER_NODE_MASK | ZOOM_NODE_MASK,
+    STANDARD_FOREGROUND                     = STANDARD_MASK | FOREGROUND_MASK,
+    STANDARD_BACKGROUND                     = STANDARD_MASK | BACKGROUND_MASK,
+};
+
+inline ExternalRenderPassType operator & (ExternalRenderPassType a, ExternalRenderPassType b) {
+    return (ExternalRenderPassType)((int)a & (int)b);
+}
+
+inline ExternalRenderPassType operator | (ExternalRenderPassType a, ExternalRenderPassType b) {
+    return (ExternalRenderPassType)((int)a | (int)b);
+}
+
+inline bool any(ExternalRenderPassType v) {
+    return v != ExternalRenderPassType::NONE;
+}
+
+ExternalRenderPassType external_render_pass_type_from_string(const std::string& str);
+std::string external_render_pass_type_to_string(ExternalRenderPassType pass);
+
+std::ostream& operator << (std::ostream& ostr, ExternalRenderPassType pass);
+
+}

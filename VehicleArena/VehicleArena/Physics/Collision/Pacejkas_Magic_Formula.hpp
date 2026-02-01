@@ -1,0 +1,150 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#pragma once
+#include <VehicleArena/Array/Fixed_Array.hpp>
+#include <VehicleArena/Images/Linear_Interpolation.hpp>
+#include <VehicleArena/Iterator/Enumerate.hpp>
+#include <VehicleArena/Math/Optimize/Find_Right_Boundary_Of_Maximum.hpp>
+#include <VehicleArena/Math/Optimize/Newton_1D.hpp>
+#include <VehicleArena/Math/Optimize/Numerical_Differentiation.hpp>
+#include <VehicleArena/Stats/Linspace.hpp>
+#include <cmath>
+#include <stdexcept>
+
+namespace VA {
+
+enum class PacejkasMagicFormulaMode {
+    STANDARD,
+    NO_SLIP
+};
+
+template <class TData>
+struct PacejkasMagicFormula {
+    TData B = 41;           // x-scaling
+    TData C = (TData)1.4;
+    TData D = 1;            // y-scaling
+    TData E = (TData)-0.2;
+    TData operator () (const TData& x) const {
+        return D * std::sin(C * std::atan(B * x - E * (B * x - std::atan(B * x))));
+    }
+    template <class TData2>
+    PacejkasMagicFormula<TData2> casted() const {
+        return PacejkasMagicFormula<TData2>{
+            .B = B,
+            .C = C,
+            .D = D,
+            .E = E};
+    }
+};
+
+template <class TData>
+class PacejkasMagicFormulaArgmax {
+public:
+    PacejkasMagicFormulaArgmax() {}
+    explicit PacejkasMagicFormulaArgmax(const PacejkasMagicFormula<TData>& magic_formula)
+        : mf{ magic_formula }
+    {
+        PacejkasMagicFormula<double> mf2 = magic_formula.template casted<double>();
+        double h = 1e-3;
+        auto f = [&mf2](const double& x) { return (double)mf2(x); };
+        auto df = [&f, &h](const double& x) { return (f(x + h) - f(x - h)) / (2 * h); };
+        auto df2 = [&df, &h](const double& x) { return (df(x + h) - df(x - h)) / (2 * h); };
+        double x0 = find_right_boundary_of_maximum<double>(f, 0, 1e-2);
+        argmax = (TData)newton_1d(df, df2, x0);
+        // return 1 / (B * std::sqrt(E - 1));
+        TData xmin = 0.;
+        TData xmax = TData(10) * argmax;
+        ys = Array<TData>{ ArrayShape{ 1000 } };
+        for (auto&& [i, x] : enumerate(Linspace(xmin, xmax, ys.length()))) {
+            ys(i) = magic_formula(x);
+        }
+        li = { xmin, xmax, ys };
+    }
+    TData operator () (const TData& x, PacejkasMagicFormulaMode mode = PacejkasMagicFormulaMode::STANDARD) const {
+        switch (mode) {
+        case PacejkasMagicFormulaMode::STANDARD:
+            // return mf(x);
+            TData y;
+            if (!li(std::abs(x), y)) {
+                return ys(ys.length() - 1);
+            }
+            return sign(x) * y;
+        case PacejkasMagicFormulaMode::NO_SLIP:
+            return std::abs(x) >= argmax ? sign(x) * mf.D : (*this)(x);
+        default:
+            throw std::runtime_error("Unknown magic formula mode");
+        }
+    }
+    TData argmax;
+private:
+    PacejkasMagicFormula<TData> mf;
+    Array<TData> ys;
+    LinearInterpolationDomain<TData> li;
+};
+
+/**
+ * From: Brian Beckman, The Physics Of Racing Series, Part 25
+ */
+template <class TData>
+struct CombinedPacejkasMagicFormula {
+    FixedArray<PacejkasMagicFormulaArgmax<TData>, 2> f;
+    FixedArray<TData, 2> operator () (const FixedArray<TData, 2>& x, PacejkasMagicFormulaMode mode = PacejkasMagicFormulaMode::STANDARD) const {
+        FixedArray<TData, 2> s{
+            x(0) / f(0).argmax,
+            x(1) / f(1).argmax};
+        TData p = std::sqrt(sum(squared(s)));
+        if (p < 1e-12) {
+            return FixedArray<TData, 2>{(TData)0, (TData)0};
+        }
+        return {
+            s(0) / p * f(0)(p * f(0).argmax, mode),
+            s(1) / p * f(1)(p * f(1).argmax, mode)};
+    }
+    const PacejkasMagicFormulaArgmax<TData>& longitudinal() const {
+        return f(0);
+    }
+    const PacejkasMagicFormulaArgmax<TData>& lateral() const {
+        return f(1);
+    }
+    PacejkasMagicFormulaArgmax<TData>& longitudinal() {
+        return f(0);
+    }
+    PacejkasMagicFormulaArgmax<TData>& lateral() {
+        return f(1);
+    }
+};
+
+/**
+ * From: https://en.wikipedia.org/wiki/Hans_B._Pacejka
+ * 
+ * Modification: x in radians, not degrees.
+ * => B = 0.714 * 180 / pi = 41
+ */
+template <class TData>
+TData pacejkas_magic_formula(
+    const TData& x,
+    const TData& B = 41,
+    const TData& C = 1.4,
+    const TData& D = 1,
+    const TData& E = -0.2)
+{
+    return PacejkasMagicFormula<TData>{.B = B, .C = C, .D = D, .E = E}(x);
+}
+
+template <class TData>
+TData pacejkas_magic_formula_positive(
+    const TData& x,
+    const TData& B = 41,
+    const TData& C = 1.4,
+    const TData& D = 1,
+    const TData& E = -0.2)
+{
+    return PacejkasMagicFormula<TData>{.B = B, .C = C, .D = D, .E = E}.call_positive(x);
+}
+
+}

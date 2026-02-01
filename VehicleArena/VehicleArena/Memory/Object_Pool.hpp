@@ -7,9 +7,9 @@
 
 #pragma once
 #include <VehicleArena/Memory/Dangling_Base_Class.hpp>
-#include <VehicleArena/Object.hpp>
+#include <VehicleArena/Misc/Object.hpp>
+#include <VehicleArena/Misc/Source_Location.hpp>
 #include <VehicleArena/Os/Os.hpp>
-#include <VehicleArena/Source_Location.hpp>
 #include <VehicleArena/Threads/Fast_Mutex.hpp>
 #include <compare>
 #include <functional>

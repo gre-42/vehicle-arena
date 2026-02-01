@@ -1,0 +1,49 @@
+// !!!! WARNING !!!!!
+// Please note that I cannot guarantee correctness and safety of the code, as SHA256 is not secure.
+// echo jk | sha256sum: 720daff2aefd2b3457cbd597509b0fa399e258444302c2851f8d3cdd8ad781eb
+// echo ks | sha256sum: 1aa44e718d5bc9b7ff2003dbbb6f154e16636d5c2128ffce4751af5124b65337
+// echo xy | sha256sum: 3b2fc206fd92be3e70843a6d6d466b1f400383418b3c16f2f0af89981f1337f3
+// echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
+
+#pragma once
+#include <string>
+
+namespace VA {
+
+enum class AggregateMode {
+    NONE = 0,
+    ONCE = 1 << 0,
+    SORTED_CONTINUOUSLY = 1 << 1,
+    INSTANCES_ONCE = 1 << 2,
+    INSTANCES_SORTED_CONTINUOUSLY = 1 << 3,
+    NODE_OBJECT = 1 << 4,
+    NODE_TRIANGLES = 1 << 5,
+    OBJECT_MASK = ONCE | SORTED_CONTINUOUSLY | NODE_OBJECT | NODE_TRIANGLES,
+    INSTANCES_MASK = INSTANCES_ONCE | INSTANCES_SORTED_CONTINUOUSLY
+};
+
+inline AggregateMode operator | (AggregateMode a, AggregateMode b) {
+    return (AggregateMode)((int)a | (int)b);
+}
+
+inline AggregateMode& operator |= (AggregateMode& a, AggregateMode b) {
+    (int&)a |= (int)b;
+    return a;
+}
+
+inline AggregateMode operator & (AggregateMode a, AggregateMode b) {
+    return (AggregateMode)((int)a & (int)b);
+}
+
+inline AggregateMode operator ~ (AggregateMode a) {
+    return (AggregateMode)(~(int)a);
+}
+
+inline bool any(AggregateMode a) {
+    return a != AggregateMode::NONE;
+}
+
+AggregateMode aggregate_mode_from_string(const std::string& str);
+std::string aggregate_mode_to_string(AggregateMode aggregate_mode);
+
+}
