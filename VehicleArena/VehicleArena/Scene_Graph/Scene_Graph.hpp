@@ -11,6 +11,7 @@
 #include <VehicleArena/Geometry/Primitives/Bvh_Grid.hpp>
 #include <VehicleArena/Physics/Containers/Elements/Collision_Triangle_Sphere.hpp>
 #include <VehicleArena/Scene_Config/Scene_Precision.hpp>
+#include <VehicleArena/Scene_Graph/Elements/Scene_Node.hpp>
 #include <VehicleArena/Scene_Graph/Scene_Element_Type.hpp>
 #include <memory>
 #include <set>
@@ -26,8 +27,12 @@ class RigidBodyVehicle;
 class IIntersectableMesh;
 
 struct RigidBodyAndIntersectableMesh {
+    std::unique_ptr<SceneNode> node;
     std::shared_ptr<RigidBodyVehicle> rb;
     TypedMesh<std::shared_ptr<IIntersectableMesh>> mesh;
+    bool visit_all(const auto& visitor) const {
+        return visitor(mesh);
+    }
 };
 
 class SceneGraph {
@@ -42,14 +47,15 @@ private:
     using RenderablesBvh = Bvh<
         CompressedScenePos,
         3,
-        std::shared_ptr<IRenderable>>;
+        std::shared_ptr<IRenderable>,
+        BvhThreadSafety::THREAD_SAFE>;
     using CollidablePolygonBvh = CompressedBvhGrid<
         CompressedScenePos,
         HalfCompressedScenePos,
         RigidBodyAndCollisionTriangleSphere<CompressedScenePos>,
         RigidBodyAndCollisionTriangleSphere<HalfCompressedScenePos>,
         3>;
-    using CollidableMovablesBvh = BvhGrid<
+    using CollidableMovablesBvh = GenericBvhGrid<
         CompressedScenePos,
         3,
         RigidBodyAndIntersectableMesh>;

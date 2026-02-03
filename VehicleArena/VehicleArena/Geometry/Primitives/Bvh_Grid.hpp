@@ -43,6 +43,10 @@ public:
         }
         return *grid_;
     }
+    void move() {
+        grid_.reset();
+        root_bvh.move();
+    }
 private:
     void compute_grid() const {
         auto boundary = root_bvh.aabb();
@@ -58,8 +62,8 @@ private:
             if (!b.data().empty()) {
                 grid_->insert(b.data_aabb(), IntersectionGridPointerEntry{&b}, non_recursive_v);
             }
-            for (const auto& [_, c] : b.children()) {
-                insert_into_grid(c, depth + 1);
+            for (const auto& c : b.children().iterable()) {
+                insert_into_grid(c->second, depth + 1);
             }
         }
     }

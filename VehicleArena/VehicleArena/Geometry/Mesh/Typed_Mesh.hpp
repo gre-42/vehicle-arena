@@ -17,6 +17,9 @@ template <class T>
 struct TypedMesh {
     PhysicsMaterial physics_material;
     T mesh;
+    decltype(auto) primitive() const {
+        return mesh->aabb();
+    }
     std::strong_ordering operator <=> (const TypedMesh&) const = default;
 };
 

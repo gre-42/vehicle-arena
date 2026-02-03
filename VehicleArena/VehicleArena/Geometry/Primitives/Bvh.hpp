@@ -7,6 +7,8 @@
 
 #pragma once
 #include <VehicleArena/Geometry/Primitives/Bvh_Fwd.hpp>
+#include <VehicleArena/List_Of_Pairs/List_Of_Pair_Adapters.hpp>
+#include <VehicleArena/List_Of_Pairs/Thread_Safe_List_Of_Shared_Pairs.hpp>
 #include <VehicleArena/Math/Fixed_Math.hpp>
 #include <VehicleArena/Math/Funpack.hpp>
 #include <VehicleArena/Math/Pow.hpp>
@@ -43,12 +45,27 @@ enum class BvhDataRadiusType {
     NONZERO
 };
 
+template <class TPosition, size_t tndim, class TBvh, BvhThreadSafety thread_safety>
+struct BvhChildren {};
+
+template <class TPosition, size_t tndim, class TBvh>
+struct BvhChildren<TPosition, tndim, TBvh, BvhThreadSafety::NOT_THREAD_SAFE> {
+    using type = ListOfPairAdapters<AxisAlignedBoundingBox<TPosition, tndim>, TBvh>;
+};
+
+template <class TPosition, size_t tndim, class TBvh>
+struct BvhChildren<TPosition, tndim, TBvh, BvhThreadSafety::THREAD_SAFE> {
+    using type = ThreadSafeListOfSharedPairs<AxisAlignedBoundingBox<TPosition, tndim>, TBvh>;
+};
+
 /**
  * Bounding volume hierarchy
  */
-template <class TPosition, size_t tndim, class TData>
+template <class TPosition, size_t tndim, class TData, BvhThreadSafety thread_safety>
 class GenericBvh {
 public:
+    using TChildren = BvhChildren<TPosition, tndim, GenericBvh, thread_safety>::type;
+
     GenericBvh(const FixedArray<TPosition, tndim>& max_size, size_t level)
         : max_size_{max_size}
         , level_{level}
@@ -72,23 +89,23 @@ public:
         if (any(diagonal_sizes(entry.primitive()) > max_size_children)) {
             return data_.add(entry);
         }
-        for (auto& c : children_) {
-            AxisAlignedBoundingBox<TPosition, tndim> bb = c.first;
+        for (auto& c : children_.iterable()) {
+            AxisAlignedBoundingBox<TPosition, tndim> bb = c->first;
             bb.extend(entry.primitive());
             // if (all(bb.size() <= TPosition(level_) * max_size_)) {
             if (all(bb.size() <= max_size_children)) {
-                c.first = bb;
-                return c.second.insert(entry);
+                c->first = bb;
+                return c->second.insert(entry);
             }
         }
-        return children_.emplace_back(VA::aabb(entry.primitive()), GenericBvh{max_size_, level_ - 1}).second.insert(entry);
+        return children_.emplace_back(VA::aabb(entry.primitive()), GenericBvh{max_size_, level_ - 1})->second.insert(entry);
     }
 
     AxisAlignedBoundingBox<TPosition, tndim> move() {
         auto result = AxisAlignedBoundingBox<TPosition, tndim>::empty();
-        for (auto& [aabb, c] : children_) {
-            aabb = c.move();
-            result.extend(aabb);
+        for (auto& c : children_.iterable()) {
+            c->first = c->second.move();
+            result.extend(c->first);
         }
         result.extend(data_aabb());
         return result;
@@ -101,8 +118,8 @@ public:
 
     size_t size() const {
         size_t result = data_.size();
-        for (const auto& [_, c] : children_) {
-            result += c.size();
+        for (const auto& c : children_.iterable()) {
+            result += c->second.size();
         }
         return result;
     }
@@ -128,9 +145,9 @@ public:
         if (!data_.visit(aabb, visitors...)) {
             return false;
         }
-        for (const auto& c : children_) {
-            if (intersects(aabb, c.first)) {
-                if (!c.second.visit(aabb, visitors...)) {
+        for (const auto& c : children_.iterable()) {
+            if (intersects(aabb, c->first)) {
+                if (!c->second.visit(aabb, visitors...)) {
                     return false;
                 }
             }
@@ -143,9 +160,9 @@ public:
         if (!data_.visit_pairs(aabb, visitors...)) {
             return false;
         }
-        for (const auto& c : children_) {
-            if (intersects(aabb, c.first)) {
-                if (!c.second.visit_pairs(aabb, visitors...)) {
+        for (const auto& c : children_.iterable()) {
+            if (intersects(aabb, c->first)) {
+                if (!c->second.visit_pairs(aabb, visitors...)) {
                     return false;
                 }
             }
@@ -168,8 +185,8 @@ public:
             result.extend(d.primitive());
             return true;
         });
-        for (const auto& c : children_) {
-            result.extend(c.first);
+        for (const auto& c : children_.iterable()) {
+            result.extend(c->first);
         }
         return result;
     }
@@ -187,24 +204,24 @@ public:
         }
         if (opts.children) {
             ostr << indent << "children " << children_.size() << '\n';
-            for (const auto& [aabb, child] : children_) {
+            for (const auto& c : children_.iterable()) {
                 if (opts.aabb) {
-                    aabb.print(ostr, rec + 1);
+                    c->first.print(ostr, rec + 1);
                     ostr << '\n';
                 }
-                child.print(ostr, opts, rec + 1);
+                c->second.print(ostr, opts, rec + 1);
             }
         }
     }
 
     float search_time(BvhDataRadiusType data_radius_type) const {
         float res = (float)children_.size();
-        for (const auto& c : children_) {
+        for (const auto& c : children_.iterable()) {
             if (data_radius_type == BvhDataRadiusType::ZERO) {
                 // The following assumptions are made:
                 // 1. The query radius is rather small.
                 // 2. The children do not overlap.
-                res += c.second.search_time(data_radius_type) / (float)children_.size();
+                res += c->second.search_time(data_radius_type) / (float)children_.size();
             } else if (data_radius_type == BvhDataRadiusType::NONZERO) {
                 // The following assumptions are made:
                 // 1. The query radius is zero.
@@ -212,12 +229,12 @@ public:
                 // Under these assumptions, compute the probability of having
                 // to traverse the child "c".
                 size_t nintersections = 0;
-                for (const auto& other : children_) {
-                    if (c.first.contains(other.first.center())) {
+                for (const auto& other : children_.iterable()) {
+                    if (c->first.contains(other->first.center())) {
                         ++nintersections;
                     }
                 }
-                res += c.second.search_time(data_radius_type) * (float)nintersections / (float)children_.size();
+                res += c->second.search_time(data_radius_type) * (float)nintersections / (float)children_.size();
             }
         }
         res += (float)data_.size();
@@ -229,8 +246,8 @@ public:
         if (!data_.visit_all(visitors...)) {
             return false;
         }
-        for (const auto& c : children_) {
-            if (!c.second.visit_all(visitors...)) {
+        for (const auto& c : children_.iterable()) {
+            if (!c->second.visit_all(visitors...)) {
                 return false;
             }
         }
@@ -241,8 +258,8 @@ public:
         const auto& node_visitor,
         const auto& leaf_visitor)
     {
-        for (auto& [_, c] : children_) {
-            c.modify_bottom_up(node_visitor, leaf_visitor);
+        for (auto& c : children_.iterable()) {
+            c->second.modify_bottom_up(node_visitor, leaf_visitor);
         }
         node_visitor(children_);
         leaf_visitor(data_);
@@ -252,8 +269,8 @@ public:
         if (!visitor(*this)) {
             return false;
         }
-        for (const auto &c : children_) {
-            if (!c.second.visit_bvhs(visitor)) {
+        for (const auto &c : children_.iterable()) {
+            if (!c->second.visit_bvhs(visitor)) {
                 return false;
             }
         }
@@ -353,8 +370,8 @@ public:
     void fill(GenericBvh& other) const
     {
         data_.fill(other);
-        for (const auto& c : children_) {
-            c.second.fill(other);
+        for (const auto& c : children_.iterable()) {
+            c->second.fill(other);
         }
     }
 
@@ -406,9 +423,9 @@ public:
             plot_aabb(VA::aabb(d.primitive()));
             return true;
         });
-        for (const auto& child : children_) {
-            plot_aabb(child.first);
-            child.second.plot_bvh(origin, svg, axis0, axis1, stroke_width);
+        for (const auto& c : children_.iterable()) {
+            plot_aabb(c->first);
+            c->second.plot_bvh(origin, svg, axis0, axis1, stroke_width);
         }
     }
 
@@ -430,7 +447,7 @@ public:
         return data_;
     }
 
-    const std::list<std::pair<AxisAlignedBoundingBox<TPosition, tndim>, GenericBvh>>& children() const
+    const TChildren& children() const
     {
         return children_;
     }
@@ -438,7 +455,7 @@ private:
     FixedArray<TPosition, tndim> max_size_;
     size_t level_;
     TData data_;
-    std::list<std::pair<AxisAlignedBoundingBox<TPosition, tndim>, GenericBvh>> children_;
+    TChildren children_;
 };
 
 template <class TPosition, size_t tndim, class TData>

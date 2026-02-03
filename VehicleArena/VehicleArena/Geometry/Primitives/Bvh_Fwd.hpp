@@ -13,7 +13,12 @@
 
 namespace VA {
 
-template <class TPosition, size_t tndim, class TData>
+enum class BvhThreadSafety {
+    NOT_THREAD_SAFE,
+    THREAD_SAFE
+};
+
+template <class TPosition, size_t tndim, class TData, BvhThreadSafety thread_safety = BvhThreadSafety::NOT_THREAD_SAFE>
 class GenericBvh;
 
 template <class TPosition, size_t tndim, class TPayload>
@@ -31,11 +36,12 @@ class PayloadContainer;
 template <class TPosition, size_t tndim, class TSmallContainer, class TLargeContainer>
 class CompressedPayloadContainer;
 
-template <class TPosition, size_t tndim, class TPayload>
+template <class TPosition, size_t tndim, class TPayload, BvhThreadSafety thread_safety = BvhThreadSafety::NOT_THREAD_SAFE>
 using Bvh = GenericBvh<
     TPosition,
     tndim,
-    PayloadContainer<std::list<AabbAndPayload<TPosition, tndim, TPayload>>>>;
+    PayloadContainer<std::list<AabbAndPayload<TPosition, tndim, TPayload>>>,
+    thread_safety>;
 
 template <class TPosition, size_t tndim, class TPayload>
 using PointAndPayloadVectorBvh = GenericBvh<

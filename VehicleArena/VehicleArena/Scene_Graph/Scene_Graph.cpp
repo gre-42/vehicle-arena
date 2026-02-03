@@ -6,6 +6,7 @@
 // echo za | sha256sum: 28832ea947ea9588ff3acbad546b27fd001a875215beccf0e5e4eee51cc81a2e
 
 #include "Scene_Graph.hpp"
+#include <VehicleArena/Geometry/Mesh/IIntersectable_Mesh.hpp>
 #include <VehicleArena/Scene_Config/Physics_Engine_Config.hpp>
 #include <VehicleArena/Scene_Config/Render_Engine_Config.hpp>
 #include <stdexcept>
@@ -49,7 +50,7 @@ void SceneGraph::move(SceneElementTypes types) {
         dynamic_renderables_.move();
     }
     if (any(types & SceneElementTypes::COLLIDABLE)) {
-        throw std::runtime_error("Moving collidables not yet implemented");
+        dynamic_object_collidables_.move();
     }
 }
 
